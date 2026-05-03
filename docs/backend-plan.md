@@ -4,7 +4,7 @@
 
 - Build backend foundation to implement modules in this order: `Auth` -> `Product` -> `Inventory`.
 - Keep `Reports` at contract and dependency-definition level only in phase 1.
-- Use Spring Boot layered architecture: `controller -> service -> repository -> entity/dto`.
+- Use feature-based architecture by module (`auth`, `product`, `inventory`) and keep layer separation inside each module (`controller -> service -> repository -> entity/dto`).
 
 ## 2) Scope and Priority
 
