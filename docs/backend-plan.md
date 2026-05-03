@@ -65,6 +65,7 @@
 - Roles: `ADMIN`, `MANAGER`, `STAFF`.
 - Public endpoints: auth login/refresh.
 - Protected endpoints: all product/inventory endpoints.
+- Bootstrap admin mặc định ở môi trường local/dev nếu chưa có user: `admin / 123456`.
 
 ### Database
 - Engine: MySQL.
@@ -74,6 +75,7 @@
   - refresh_tokens
   - products
   - inventory_adjustments
+- Datasource local dùng `createDatabaseIfNotExist=true` để tự tạo `pos_db` khi chưa tồn tại.
 
 ## 5) Error Response Contract
 

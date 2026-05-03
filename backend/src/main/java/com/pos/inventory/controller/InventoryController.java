@@ -7,10 +7,13 @@ import com.pos.inventory.dto.LowStockProductResponse;
 import com.pos.common.enums.AdjustmentType;
 import com.pos.inventory.service.InventoryService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +25,7 @@ import java.time.Instant;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/inventory")
 public class InventoryController {
 
@@ -41,9 +45,9 @@ public class InventoryController {
 
     @GetMapping("/adjustments")
     public ResponseEntity<InventoryAdjustmentPageResponse> findAdjustments(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) Long productId,
+            @RequestParam(defaultValue = "0") @Min(value = 0, message = "page must be greater than or equal to 0") int page,
+            @RequestParam(defaultValue = "20") @Min(value = 1, message = "size must be greater than or equal to 1") @Max(value = 100, message = "size must be less than or equal to 100") int size,
+            @RequestParam(required = false) @Min(value = 1, message = "productId must be greater than 0") Long productId,
             @RequestParam(required = false) AdjustmentType type,
             @RequestParam(required = false) Instant from,
             @RequestParam(required = false) Instant to
@@ -52,7 +56,7 @@ public class InventoryController {
     }
 
     @GetMapping("/low-stock")
-    public ResponseEntity<List<LowStockProductResponse>> findLowStockProducts(@RequestParam(defaultValue = "10") int threshold) {
+    public ResponseEntity<List<LowStockProductResponse>> findLowStockProducts(@RequestParam(defaultValue = "10") @Min(value = 0, message = "threshold must be greater than or equal to 0") int threshold) {
         return ResponseEntity.ok(inventoryService.findLowStockProducts(threshold));
     }
 }

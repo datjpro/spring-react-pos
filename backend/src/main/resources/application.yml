@@ -3,9 +3,9 @@ spring:
     name: pos-backend
 
   datasource:
-    url: jdbc:mysql://localhost:3306/pos_db
+    url: jdbc:mysql://localhost:3306/pos_db?createDatabaseIfNotExist=true
     username: root
-    password: root
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   flyway:
@@ -29,6 +29,13 @@ app:
       secret: 0123456789012345678901234567890101234567890123456789012345678901
       access-token-expiration-ms: 3600000
       refresh-token-expiration-ms: 604800000
+
+  bootstrap:
+    admin:
+      enabled: true
+      username: admin
+      password: 123456
+      role: ADMIN
 
 logging:
   level:

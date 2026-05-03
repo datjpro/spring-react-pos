@@ -76,6 +76,10 @@ public class InventoryServiceImpl implements InventoryService {
                                                            AdjustmentType adjustmentType,
                                                            Instant from,
                                                            Instant to) {
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new BadRequestException("from must be before or equal to to");
+        }
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Specification<InventoryAdjustmentEntity> specification = (root, query, criteriaBuilder) -> {
