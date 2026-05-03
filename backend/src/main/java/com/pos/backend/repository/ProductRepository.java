@@ -14,6 +14,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long>, J
 
     Optional<ProductEntity> findByIdAndActiveTrue(Long id);
 
+    List<ProductEntity> findByActiveTrueAndStockLessThanEqualOrderByStockAsc(Integer threshold);
+
     @Query("select distinct product.category from ProductEntity product where product.active = true and product.category is not null order by product.category")
     List<String> findDistinctActiveCategories();
 }
