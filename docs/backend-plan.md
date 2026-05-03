@@ -141,3 +141,22 @@ Dependencies that must be available before full reports implementation:
 - `orders` table with `status`, `total_amount`, `created_at`
 - `order_items` table with `product_id`, `quantity`, `unit_price`
 
+### Planned response contracts
+
+- `GET /api/v1/reports/revenue`
+  - Query: `from`, `to`, `groupBy`
+  - Response summary fields: `totalRevenue`, `totalOrders`, `averageOrderValue`, `data`
+- `GET /api/v1/reports/top-products`
+  - Query: `from`, `to`, `limit`, `sortBy`
+  - Response summary fields: `totalProducts`, `items`
+- `GET /api/v1/reports/inventory-summary`
+  - Response summary fields: `totalStockValue`, `outOfStockCount`, `lowStockCount`, `categoryDistribution`, `lowStockItems`
+- `GET /api/v1/reports/export`
+  - Query: `type`, `from`, `to`, `format`
+  - Output: generated file stream; no cache
+
+### Backend dependency notes
+
+- Revenue reports depend on completed sales/order flow and final `PAID` / `COMPLETED` status rules.
+- Top-products reports depend on `order_items` snapshots to avoid broken reporting after product soft delete.
+- Inventory summary can partially reuse product and inventory modules from phase 1, but stock value requires stable `cost` semantics.
