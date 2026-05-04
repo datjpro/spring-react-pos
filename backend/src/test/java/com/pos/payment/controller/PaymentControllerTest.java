@@ -50,7 +50,7 @@ class PaymentControllerTest {
 
     @Test
     void shouldCreatePaymentSuccessfully() throws Exception {
-        CreatePaymentRequest request = new CreatePaymentRequest(1L, PaymentMethod.CASH, new BigDecimal("250000"), "cash");
+        CreatePaymentRequest request = new CreatePaymentRequest(1L, PaymentMethod.CASH, new BigDecimal("250000"), null, "cash");
         PaymentResponse response = buildResponse();
         when(paymentService.createPayment(any(CreatePaymentRequest.class))).thenReturn(response);
 
@@ -78,6 +78,6 @@ class PaymentControllerTest {
     }
 
     private PaymentResponse buildResponse() {
-        return new PaymentResponse(1L, 1L, "ORD-TEST", PaymentMethod.CASH, PaymentStatus.SUCCESS, new BigDecimal("200000"), new BigDecimal("250000"), new BigDecimal("50000"), "cash", Instant.now());
+        return new PaymentResponse(1L, 1L, "ORD-TEST", PaymentMethod.CASH, null, PaymentStatus.SUCCESS, new BigDecimal("200000"), new BigDecimal("250000"), new BigDecimal("50000"), "cash", Instant.now());
     }
 }

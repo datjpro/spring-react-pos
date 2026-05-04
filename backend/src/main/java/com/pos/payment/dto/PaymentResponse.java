@@ -11,6 +11,7 @@ public record PaymentResponse(
         Long orderId,
         String orderCode,
         PaymentMethod paymentMethod,
+        String paymentReference,
         PaymentStatus status,
         BigDecimal amountPaid,
         BigDecimal amountReceived,

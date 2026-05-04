@@ -18,6 +18,9 @@ public record CreatePaymentRequest(
         @PositiveOrZero(message = "amountReceived must be greater than or equal to 0")
         BigDecimal amountReceived,
 
+        @Size(max = 100, message = "paymentReference must be at most 100 characters")
+        String paymentReference,
+
         @Size(max = 255, message = "note must be at most 255 characters")
         String note
 ) {

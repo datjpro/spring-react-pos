@@ -31,10 +31,6 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public PaymentResponse createPayment(CreatePaymentRequest createPaymentRequest) {
-        if (createPaymentRequest.paymentMethod() != PaymentMethod.CASH) {
-            throw new BadRequestException("Phase 2 supports CASH payment only");
-        }
-
         OrderEntity orderEntity = orderRepository.findById(createPaymentRequest.orderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -47,17 +43,16 @@ public class PaymentServiceImpl implements PaymentService {
 
         BigDecimal amountPaid = orderEntity.getTotalAmount();
         BigDecimal amountReceived = createPaymentRequest.amountReceived();
-        if (amountReceived.compareTo(amountPaid) < 0) {
-            throw new BadRequestException("amountReceived must be greater than or equal to totalAmount");
-        }
+        BigDecimal changeAmount = calculateChangeAmount(createPaymentRequest.paymentMethod(), amountPaid, amountReceived);
 
         PaymentEntity paymentEntity = new PaymentEntity();
         paymentEntity.setOrder(orderEntity);
-        paymentEntity.setPaymentMethod(PaymentMethod.CASH);
+        paymentEntity.setPaymentMethod(createPaymentRequest.paymentMethod());
+        paymentEntity.setPaymentReference(normalizeReference(createPaymentRequest.paymentReference()));
         paymentEntity.setStatus(PaymentStatus.SUCCESS);
         paymentEntity.setAmountPaid(amountPaid);
         paymentEntity.setAmountReceived(amountReceived);
-        paymentEntity.setChangeAmount(amountReceived.subtract(amountPaid));
+        paymentEntity.setChangeAmount(changeAmount);
         paymentEntity.setNote(createPaymentRequest.note());
 
         PaymentEntity savedPayment = paymentRepository.save(paymentEntity);
@@ -83,12 +78,41 @@ public class PaymentServiceImpl implements PaymentService {
                 .toList();
     }
 
+    private BigDecimal calculateChangeAmount(PaymentMethod paymentMethod, BigDecimal amountPaid, BigDecimal amountReceived) {
+        if (paymentMethod == PaymentMethod.CASH) {
+            if (amountReceived.compareTo(amountPaid) < 0) {
+                throw new BadRequestException("amountReceived must be greater than or equal to totalAmount");
+            }
+            return amountReceived.subtract(amountPaid);
+        }
+
+        if (paymentMethod == PaymentMethod.CARD
+                || paymentMethod == PaymentMethod.QR
+                || paymentMethod == PaymentMethod.TRANSFER) {
+            if (amountReceived.compareTo(amountPaid) != 0) {
+                throw new BadRequestException("amountReceived must equal totalAmount for non-cash payment");
+            }
+            return BigDecimal.ZERO;
+        }
+
+        throw new BadRequestException("Unsupported payment method");
+    }
+
+    private String normalizeReference(String paymentReference) {
+        if (paymentReference == null) {
+            return null;
+        }
+        String trimmedReference = paymentReference.trim();
+        return trimmedReference.isEmpty() ? null : trimmedReference;
+    }
+
     private PaymentResponse mapToResponse(PaymentEntity paymentEntity) {
         return new PaymentResponse(
                 paymentEntity.getId(),
                 paymentEntity.getOrder().getId(),
                 paymentEntity.getOrder().getOrderCode(),
                 paymentEntity.getPaymentMethod(),
+                paymentEntity.getPaymentReference(),
                 paymentEntity.getStatus(),
                 paymentEntity.getAmountPaid(),
                 paymentEntity.getAmountReceived(),
