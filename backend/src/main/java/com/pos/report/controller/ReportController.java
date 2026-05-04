@@ -7,6 +7,9 @@ import com.pos.report.service.ReportService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -51,4 +55,27 @@ public class ReportController {
     public ResponseEntity<InventorySummaryResponse> getInventorySummary() {
         return ResponseEntity.ok(reportService.getInventorySummary());
     }
+
+    @GetMapping("/export")
+    public ResponseEntity<String> exportReport(
+            @RequestParam String type,
+            @RequestParam(defaultValue = "csv") String format,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+            @RequestParam(defaultValue = "day") String groupBy,
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit must be greater than or equal to 1") @Max(value = 100, message = "limit must be less than or equal to 100") int limit,
+            @RequestParam(defaultValue = "quantity") String sortBy) {
+        if (!"csv".equalsIgnoreCase(format)) {
+            throw new com.pos.common.exception.BadRequestException("Phase 3 supports csv export only");
+        }
+
+        String csvContent = reportService.exportReportCsv(type, from, to, groupBy, limit, sortBy);
+        String filename = "pos-" + type.toLowerCase() + "-" + LocalDate.now() + ".csv";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(filename).build().toString())
+                .body(csvContent);
+    }
 }
+

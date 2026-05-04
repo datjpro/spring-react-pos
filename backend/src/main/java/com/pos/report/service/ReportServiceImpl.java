@@ -1,6 +1,5 @@
 package com.pos.report.service;
 
-import com.pos.common.enums.OrderStatus;
 import com.pos.common.exception.BadRequestException;
 import com.pos.order.repository.OrderItemRepository;
 import com.pos.order.repository.OrderRepository;
@@ -13,17 +12,25 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import static com.pos.common.enums.OrderStatus.COMPLETED;
 
 @Service
 public class ReportServiceImpl implements ReportService {
 
     private static final int DEFAULT_LOW_STOCK_THRESHOLD = 10;
     private static final int MAX_TOP_PRODUCT_LIMIT = 100;
+    private static final long MAX_REPORT_RANGE_DAYS = 365;
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -40,23 +47,22 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public RevenueReportResponse getRevenueReport(Instant from, Instant to, String groupBy) {
         validateDateRange(from, to);
-        if (!"day".equalsIgnoreCase(groupBy)) {
-            throw new BadRequestException("Phase 2 supports groupBy=day only");
-        }
+        String normalizedGroupBy = normalizeGroupBy(groupBy);
 
-        List<RevenueDataPoint> dataPoints = orderRepository.summarizeRevenueByDate(OrderStatus.COMPLETED, from, to)
+        List<RevenueDataPoint> dailyDataPoints = orderRepository.summarizeRevenueByDate(COMPLETED, from, to)
                 .stream()
                 .map(this::mapRevenueDataPoint)
                 .toList();
 
-        BigDecimal totalRevenue = dataPoints.stream()
+        List<RevenueDataPoint> groupedDataPoints = groupRevenueDataPoints(dailyDataPoints, normalizedGroupBy);
+        BigDecimal totalRevenue = groupedDataPoints.stream()
                 .map(RevenueDataPoint::revenue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        Long totalOrders = dataPoints.stream()
+        Long totalOrders = groupedDataPoints.stream()
                 .map(RevenueDataPoint::orderCount)
                 .reduce(0L, Long::sum);
 
-        return new RevenueReportResponse(from, to, groupBy.toLowerCase(), totalRevenue, totalOrders, dataPoints);
+        return new RevenueReportResponse(from, to, normalizedGroupBy, totalRevenue, totalOrders, groupedDataPoints);
     }
 
     @Override
@@ -73,7 +79,7 @@ public class ReportServiceImpl implements ReportService {
                 ? Comparator.comparing(TopProductResponse::totalRevenue)
                 : Comparator.comparing(TopProductResponse::totalQuantity);
 
-        return orderItemRepository.summarizeTopProducts(OrderStatus.COMPLETED, from, to)
+        return orderItemRepository.summarizeTopProducts(COMPLETED, from, to)
                 .stream()
                 .map(this::mapTopProduct)
                 .sorted(comparator.reversed())
@@ -93,6 +99,17 @@ public class ReportServiceImpl implements ReportService {
         );
     }
 
+    @Override
+    public String exportReportCsv(String type, Instant from, Instant to, String groupBy, int limit, String sortBy) {
+        String normalizedType = normalizeType(type);
+        return switch (normalizedType) {
+            case "revenue" -> exportRevenueCsv(getRevenueReport(from, to, groupBy));
+            case "top-products" -> exportTopProductsCsv(getTopProducts(from, to, limit, sortBy));
+            case "inventory-summary" -> exportInventorySummaryCsv(getInventorySummary());
+            default -> throw new BadRequestException("Unsupported report type");
+        };
+    }
+
     private void validateDateRange(Instant from, Instant to) {
         if (from == null || to == null) {
             throw new BadRequestException("from and to are required");
@@ -100,6 +117,105 @@ public class ReportServiceImpl implements ReportService {
         if (from.isAfter(to)) {
             throw new BadRequestException("from must be before or equal to to");
         }
+        long rangeDays = Duration.between(from, to).toDays();
+        if (rangeDays > MAX_REPORT_RANGE_DAYS) {
+            throw new BadRequestException("report date range must not exceed 365 days");
+        }
+    }
+
+    private String normalizeGroupBy(String groupBy) {
+        if (groupBy == null) {
+            return "day";
+        }
+        String normalizedGroupBy = groupBy.trim().toLowerCase();
+        if (!List.of("day", "week", "month").contains(normalizedGroupBy)) {
+            throw new BadRequestException("groupBy must be day, week or month");
+        }
+        return normalizedGroupBy;
+    }
+
+    private String normalizeType(String type) {
+        if (type == null || type.isBlank()) {
+            throw new BadRequestException("type is required");
+        }
+        String normalizedType = type.trim().toLowerCase();
+        if (!List.of("revenue", "top-products", "inventory-summary").contains(normalizedType)) {
+            throw new BadRequestException("type must be revenue, top-products or inventory-summary");
+        }
+        return normalizedType;
+    }
+
+    private List<RevenueDataPoint> groupRevenueDataPoints(List<RevenueDataPoint> dailyDataPoints, String groupBy) {
+        if ("day".equals(groupBy)) {
+            return dailyDataPoints;
+        }
+
+        Map<LocalDate, List<RevenueDataPoint>> grouped = dailyDataPoints.stream()
+                .collect(Collectors.groupingBy(dataPoint -> resolvePeriodStart(dataPoint.date(), groupBy), TreeMap::new, Collectors.toList()));
+
+        return grouped.entrySet().stream()
+                .map(entry -> new RevenueDataPoint(
+                        entry.getKey(),
+                        entry.getValue().stream().map(RevenueDataPoint::revenue).reduce(BigDecimal.ZERO, BigDecimal::add),
+                        entry.getValue().stream().map(RevenueDataPoint::orderCount).reduce(0L, Long::sum)
+                ))
+                .toList();
+    }
+
+    private LocalDate resolvePeriodStart(LocalDate date, String groupBy) {
+        if ("week".equals(groupBy)) {
+            return date.with(java.time.DayOfWeek.MONDAY);
+        }
+        if ("month".equals(groupBy)) {
+            return date.with(TemporalAdjusters.firstDayOfMonth());
+        }
+        return date;
+    }
+
+    private String exportRevenueCsv(RevenueReportResponse response) {
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.append("groupBy,totalRevenue,totalOrders\n");
+        csvBuilder.append(response.groupBy()).append(',')
+                .append(response.totalRevenue()).append(',')
+                .append(response.totalOrders()).append("\n\n");
+        csvBuilder.append("date,revenue,orderCount\n");
+        response.data().forEach(dataPoint -> csvBuilder.append(dataPoint.date()).append(',')
+                .append(dataPoint.revenue()).append(',')
+                .append(dataPoint.orderCount()).append("\n"));
+        return csvBuilder.toString();
+    }
+
+    private String exportTopProductsCsv(List<TopProductResponse> topProducts) {
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.append("productId,sku,productName,totalQuantity,totalRevenue\n");
+        topProducts.forEach(product -> csvBuilder.append(product.productId()).append(',')
+                .append(escapeCsv(product.sku())).append(',')
+                .append(escapeCsv(product.productName())).append(',')
+                .append(product.totalQuantity()).append(',')
+                .append(product.totalRevenue()).append("\n"));
+        return csvBuilder.toString();
+    }
+
+    private String exportInventorySummaryCsv(InventorySummaryResponse summary) {
+        return new StringBuilder()
+                .append("totalProducts,activeProducts,totalStock,lowStockProducts,outOfStockProducts\n")
+                .append(summary.totalProducts()).append(',')
+                .append(summary.activeProducts()).append(',')
+                .append(summary.totalStock()).append(',')
+                .append(summary.lowStockProducts()).append(',')
+                .append(summary.outOfStockProducts()).append("\n")
+                .toString();
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+        String escapedValue = value.replace("\"", "\"\"");
+        if (escapedValue.contains(",") || escapedValue.contains("\"") || escapedValue.contains("\n")) {
+            return "\"" + escapedValue + "\"";
+        }
+        return escapedValue;
     }
 
     private RevenueDataPoint mapRevenueDataPoint(Object[] row) {

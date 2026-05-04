@@ -21,6 +21,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -58,6 +59,25 @@ class ReportServiceImplTest {
     }
 
     @Test
+    void shouldGroupRevenueByMonth() {
+        Instant from = Instant.parse("2026-05-01T00:00:00Z");
+        Instant to = Instant.parse("2026-06-30T23:59:59Z");
+
+        when(orderRepository.summarizeRevenueByDate(any(), any(), any()))
+                .thenReturn(List.of(
+                        new Object[]{Date.valueOf(LocalDate.of(2026, 5, 1)), new BigDecimal("120000"), 2L},
+                        new Object[]{Date.valueOf(LocalDate.of(2026, 5, 28)), new BigDecimal("80000"), 1L},
+                        new Object[]{Date.valueOf(LocalDate.of(2026, 6, 2)), new BigDecimal("50000"), 1L}
+                ));
+
+        RevenueReportResponse response = reportService.getRevenueReport(from, to, "month");
+
+        assertEquals(2, response.data().size());
+        assertEquals(LocalDate.of(2026, 5, 1), response.data().get(0).date());
+        assertEquals(new BigDecimal("200000"), response.data().get(0).revenue());
+    }
+
+    @Test
     void shouldReturnTopProductsSortedByQuantity() {
         Instant from = Instant.parse("2026-05-01T00:00:00Z");
         Instant to = Instant.parse("2026-05-31T23:59:59Z");
@@ -92,10 +112,32 @@ class ReportServiceImplTest {
     }
 
     @Test
+    void shouldExportRevenueCsv() {
+        Instant from = Instant.parse("2026-05-01T00:00:00Z");
+        Instant to = Instant.parse("2026-05-31T23:59:59Z");
+
+        when(orderRepository.summarizeRevenueByDate(any(), any(), any()))
+                .thenReturn(java.util.Collections.singletonList(new Object[]{Date.valueOf(LocalDate.of(2026, 5, 1)), new BigDecimal("120000"), 2L}));
+
+        String csvContent = reportService.exportReportCsv("revenue", from, to, "day", 10, "quantity");
+
+        assertTrue(csvContent.contains("groupBy,totalRevenue,totalOrders"));
+        assertTrue(csvContent.contains("date,revenue,orderCount"));
+    }
+
+    @Test
     void shouldRejectInvalidSortBy() {
         Instant from = Instant.parse("2026-05-01T00:00:00Z");
         Instant to = Instant.parse("2026-05-31T23:59:59Z");
 
         assertThrows(BadRequestException.class, () -> reportService.getTopProducts(from, to, 10, "name"));
+    }
+
+    @Test
+    void shouldRejectDateRangeExceeding365Days() {
+        Instant from = Instant.parse("2025-01-01T00:00:00Z");
+        Instant to = Instant.parse("2026-05-01T00:00:00Z");
+
+        assertThrows(BadRequestException.class, () -> reportService.getRevenueReport(from, to, "day"));
     }
 }

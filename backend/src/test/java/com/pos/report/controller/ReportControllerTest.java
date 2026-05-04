@@ -1,6 +1,5 @@
 package com.pos.report.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.common.exception.GlobalExceptionHandler;
 import com.pos.report.dto.InventorySummaryResponse;
 import com.pos.report.dto.RevenueDataPoint;
@@ -23,6 +22,8 @@ import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -97,5 +98,30 @@ class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalProducts").value(3))
                 .andExpect(jsonPath("$.outOfStockProducts").value(1));
+    }
+
+    @Test
+    void shouldExportRevenueCsvSuccessfully() throws Exception {
+        when(reportService.exportReportCsv(
+                "revenue",
+                Instant.parse("2026-05-01T00:00:00Z"),
+                Instant.parse("2026-05-31T23:59:59Z"),
+                "day",
+                10,
+                "quantity"
+        )).thenReturn("groupBy,totalRevenue,totalOrders\nday,100000,1\n");
+
+        mockMvc.perform(get("/api/v1/reports/export")
+                        .param("type", "revenue")
+                        .param("format", "csv")
+                        .param("from", "2026-05-01T00:00:00Z")
+                        .param("to", "2026-05-31T23:59:59Z")
+                        .param("groupBy", "day")
+                        .param("limit", "10")
+                        .param("sortBy", "quantity"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("pos-revenue-")))
+                .andExpect(content().contentType("text/csv"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("groupBy,totalRevenue,totalOrders")));
     }
 }

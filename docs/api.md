@@ -1,43 +1,45 @@
 # API Specification
 
-Tài liệu này liệt kê các endpoint chính của hệ thống POS backend hiện tại.
+Tài li?u này li?t kê các endpoint chính c?a h? th?ng POS backend hi?n t?i.
 
 ## Authentication
-- `POST /api/v1/auth/login`: đăng nhập, nhận access token và refresh token.
-- `POST /api/v1/auth/refresh`: cấp access token mới từ refresh token.
-- `POST /api/v1/auth/logout`: đăng xuất và thu hồi refresh token.
+- `POST /api/v1/auth/login`: dang nh?p, nh?n access token và refresh token.
+- `POST /api/v1/auth/refresh`: c?p access token m?i t? refresh token.
+- `POST /api/v1/auth/logout`: dang xu?t và thu h?i refresh token.
 
 ## Products
-- `GET /api/v1/products`: lấy danh sách sản phẩm, hỗ trợ phân trang/tìm kiếm/lọc.
-- `POST /api/v1/products`: tạo sản phẩm mới, validate SKU unique.
-- `GET /api/v1/products/{id}`: xem chi tiết sản phẩm.
-- `PUT /api/v1/products/{id}`: cập nhật sản phẩm.
-- `DELETE /api/v1/products/{id}`: soft delete sản phẩm.
-- `GET /api/v1/products/categories`: lấy danh sách category đang hoạt động.
+- `GET /api/v1/products`: l?y danh sách s?n ph?m, h? tr? phân trang/tìm ki?m/l?c.
+- `POST /api/v1/products`: t?o s?n ph?m m?i, validate SKU unique.
+- `GET /api/v1/products/{id}`: xem chi ti?t s?n ph?m.
+- `PUT /api/v1/products/{id}`: c?p nh?t s?n ph?m.
+- `DELETE /api/v1/products/{id}`: soft delete s?n ph?m.
+- `GET /api/v1/products/categories`: l?y danh sách category dang ho?t d?ng.
 
 ## Inventory
-- `POST /api/v1/inventory/adjustments`: tăng/giảm tồn kho.
-- `GET /api/v1/inventory/adjustments`: xem lịch sử điều chỉnh tồn kho.
-- `GET /api/v1/inventory/low-stock?threshold=10`: xem sản phẩm sắp hết hàng.
+- `POST /api/v1/inventory/adjustments`: tang/gi?m t?n kho.
+- `GET /api/v1/inventory/adjustments`: xem l?ch s? di?u ch?nh t?n kho.
+- `GET /api/v1/inventory/low-stock?threshold=10`: xem s?n ph?m s?p h?t hàng.
 
 ## Orders
-- `POST /api/v1/orders`: tạo đơn hàng từ danh sách sản phẩm và số lượng.
-- `GET /api/v1/orders/{id}`: xem chi tiết đơn hàng và item snapshot.
-- `GET /api/v1/orders`: phân trang/lọc đơn hàng theo status/from/to.
-- `POST /api/v1/orders/{id}/cancel`: hủy đơn `PENDING` và hoàn tồn kho.
+- `POST /api/v1/orders`: t?o don hàng t? danh sách s?n ph?m và s? lu?ng.
+- `GET /api/v1/orders/{id}`: xem chi ti?t don hàng và item snapshot.
+- `GET /api/v1/orders`: phân trang/l?c don hàng theo status/from/to.
+- `POST /api/v1/orders/{id}/cancel`: h?y don `PENDING` và hoàn t?n kho.
 
 ## Payments
-- `POST /api/v1/payments`: thanh toán đơn hàng bằng `CASH`.
-- `GET /api/v1/payments/{id}`: xem chi tiết payment.
-- `GET /api/v1/payments?orderId={orderId}`: xem payment theo đơn hàng.
+- `POST /api/v1/payments`: thanh toán don hàng b?ng `CASH`, `CARD`, `QR`, `TRANSFER`.
+- `GET /api/v1/payments/{id}`: xem chi ti?t payment.
+- `GET /api/v1/payments?orderId={orderId}`: xem payment theo don hàng.
+- V?i `CASH`: `amountReceived >= totalAmount`, tr? `changeAmount`.
+- V?i `CARD`, `QR`, `TRANSFER`: `amountReceived = totalAmount`, h? tr? `paymentReference`.
 
-## Reports MVP
-- `GET /api/v1/reports/revenue?from=&to=&groupBy=day`: báo cáo doanh thu từ order `COMPLETED`.
-- `GET /api/v1/reports/top-products?from=&to=&limit=10&sortBy=quantity`: top sản phẩm theo snapshot `order_items`.
-- `GET /api/v1/reports/inventory-summary`: tổng quan tồn kho hiện tại.
-- `GET /api/v1/reports/export`: giữ contract cho phase sau, chưa implement trong Phase 2.
+## Reports
+- `GET /api/v1/reports/revenue?from=&to=&groupBy=day|week|month`: báo cáo doanh thu t? order `COMPLETED`.
+- `GET /api/v1/reports/top-products?from=&to=&limit=10&sortBy=quantity|revenue`: top s?n ph?m theo snapshot `order_items`.
+- `GET /api/v1/reports/inventory-summary`: t?ng quan t?n kho hi?n t?i.
+- `GET /api/v1/reports/export?type=&format=csv`: xu?t CSV cho `revenue`, `top-products`, `inventory-summary`.
 
 ## Security
-- `ADMIN`, `MANAGER`, `STAFF`: tạo order và thanh toán CASH.
-- `ADMIN`, `MANAGER`: xem reports.
-- Endpoint còn lại yêu cầu JWT, trừ login/refresh và Swagger.
+- `ADMIN`, `MANAGER`, `STAFF`: t?o order và thanh toán.
+- `ADMIN`, `MANAGER`: xem reports và export reports.
+- Endpoint còn l?i yêu c?u JWT, tr? login/refresh và Swagger.

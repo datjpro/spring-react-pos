@@ -14,4 +14,6 @@ public interface ReportService {
     List<TopProductResponse> getTopProducts(Instant from, Instant to, int limit, String sortBy);
 
     InventorySummaryResponse getInventorySummary();
+
+    String exportReportCsv(String type, Instant from, Instant to, String groupBy, int limit, String sortBy);
 }
