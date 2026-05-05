@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 
+@Deprecated
 @RestController
 @Validated
 @RequestMapping("/api/v1/orders")
