@@ -3,7 +3,7 @@ package com.pos.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.common.enums.PaymentMethod;
 import com.pos.common.enums.PaymentStatus;
-import com.pos.exception.GlobalExceptionHandler;
+import com.pos.common.exception.GlobalExceptionHandler;
 import com.pos.dto.request.CreatePaymentRequest;
 import com.pos.dto.response.PaymentResponse;
 import com.pos.service.PaymentService;

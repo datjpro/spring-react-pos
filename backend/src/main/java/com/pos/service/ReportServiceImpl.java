@@ -1,6 +1,6 @@
 package com.pos.service;
 
-import com.pos.exception.BadRequestException;
+import com.pos.common.exception.BadRequestException;
 import com.pos.repository.SaleItemRepository;
 import com.pos.repository.ProductRepository;
 import com.pos.dto.response.InventorySummaryResponse;

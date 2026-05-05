@@ -2,7 +2,7 @@ package com.pos.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.common.enums.OrderStatus;
-import com.pos.exception.GlobalExceptionHandler;
+import com.pos.common.exception.GlobalExceptionHandler;
 import com.pos.dto.request.CancelOrderRequest;
 import com.pos.dto.request.CreateOrderItemRequest;
 import com.pos.dto.request.CreateOrderRequest;

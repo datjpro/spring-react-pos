@@ -1,8 +1,8 @@
 package com.pos.service;
 
 import com.pos.common.enums.OrderStatus;
-import com.pos.exception.BadRequestException;
-import com.pos.exception.ResourceNotFoundException;
+import com.pos.common.exception.BadRequestException;
+import com.pos.common.exception.ResourceNotFoundException;
 import com.pos.common.util.OrderCodeGenerator;
 import com.pos.dto.request.CancelOrderRequest;
 import com.pos.dto.request.CreateOrderItemRequest;

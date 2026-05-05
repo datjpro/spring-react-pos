@@ -1,6 +1,6 @@
 package com.pos.service;
 
-import com.pos.exception.UnauthorizedException;
+import com.pos.common.exception.UnauthorizedException;
 import com.pos.entity.UserEntity;
 import com.pos.repository.UserRepository;
 import org.springframework.security.core.Authentication;

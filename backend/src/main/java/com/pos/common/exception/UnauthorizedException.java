@@ -1,4 +1,4 @@
-package com.pos.exception;
+package com.pos.common.exception;
 
 public class UnauthorizedException extends RuntimeException {
 

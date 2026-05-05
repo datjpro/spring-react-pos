@@ -3,7 +3,7 @@ package com.pos.controller;
 import com.pos.dto.request.*;
 import com.pos.dto.response.*;
 import com.pos.service.BranchService;
-import com.pos.dto.response.MessageResponse;
+import com.pos.common.dto.MessageResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.*;

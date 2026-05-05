@@ -1,6 +1,6 @@
 package com.pos.service;
 
-import com.pos.exception.*;
+import com.pos.common.exception.*;
 import com.pos.dto.request.*;
 import com.pos.dto.response.*;
 import com.pos.entity.SupplierEntity;

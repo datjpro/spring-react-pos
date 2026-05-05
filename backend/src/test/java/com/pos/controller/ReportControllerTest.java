@@ -1,6 +1,6 @@
 package com.pos.controller;
 
-import com.pos.exception.GlobalExceptionHandler;
+import com.pos.common.exception.GlobalExceptionHandler;
 import com.pos.dto.response.InventorySummaryResponse;
 import com.pos.dto.response.RevenueDataPoint;
 import com.pos.dto.response.RevenueReportResponse;

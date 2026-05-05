@@ -1,4 +1,4 @@
-package com.pos.dto.response;
+package com.pos.common.dto;
 
 import java.time.Instant;
 import java.util.List;

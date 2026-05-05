@@ -6,7 +6,7 @@ import com.pos.dto.request.InventoryAdjustmentRequest;
 import com.pos.dto.response.InventoryAdjustmentResponse;
 import com.pos.dto.response.LowStockProductResponse;
 import com.pos.common.enums.AdjustmentType;
-import com.pos.exception.GlobalExceptionHandler;
+import com.pos.common.exception.GlobalExceptionHandler;
 import com.pos.service.InventoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

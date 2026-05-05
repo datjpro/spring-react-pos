@@ -69,7 +69,7 @@ public class ReportController {
             @RequestParam(defaultValue = "quantity") String sortBy,
             @RequestParam(required = false) @Min(value = 1, message = "branchId must be greater than 0") Long branchId) {
         if (!"csv".equalsIgnoreCase(format)) {
-            throw new com.pos.exception.BadRequestException("Phase 3 supports csv export only");
+            throw new com.pos.common.exception.BadRequestException("Phase 3 supports csv export only");
         }
 
         String csvContent = reportService.exportReportCsv(type, from, to, groupBy, limit, sortBy, branchId);

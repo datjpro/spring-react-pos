@@ -5,7 +5,7 @@ import com.pos.dto.request.LoginRequest;
 import com.pos.dto.response.LoginResponse;
 import com.pos.dto.request.RefreshTokenRequest;
 import com.pos.dto.response.RefreshTokenResponse;
-import com.pos.exception.GlobalExceptionHandler;
+import com.pos.common.exception.GlobalExceptionHandler;
 import com.pos.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -2,7 +2,7 @@ package com.pos.controller;
 
 import com.pos.dto.request.LoginRequest;
 import com.pos.dto.response.LoginResponse;
-import com.pos.dto.response.MessageResponse;
+import com.pos.common.dto.MessageResponse;
 import com.pos.dto.request.RefreshTokenRequest;
 import com.pos.dto.response.RefreshTokenResponse;
 import com.pos.service.AuthService;

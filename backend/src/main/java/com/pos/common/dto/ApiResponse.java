@@ -1,4 +1,4 @@
-package com.pos.dto.response;
+package com.pos.common.dto;
 
 public record ApiResponse<T>(
         T data,

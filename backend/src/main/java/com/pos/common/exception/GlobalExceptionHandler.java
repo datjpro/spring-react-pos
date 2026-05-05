@@ -1,6 +1,6 @@
-package com.pos.exception;
+package com.pos.common.exception;
 
-import com.pos.dto.response.ErrorResponse;
+import com.pos.common.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;

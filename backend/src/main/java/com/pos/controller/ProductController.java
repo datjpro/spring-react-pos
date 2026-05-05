@@ -1,7 +1,7 @@
 package com.pos.controller;
 
 import com.pos.dto.request.CreateProductRequest;
-import com.pos.dto.response.MessageResponse;
+import com.pos.common.dto.MessageResponse;
 import com.pos.dto.response.ProductPageResponse;
 import com.pos.dto.response.ProductResponse;
 import com.pos.dto.request.UpdateProductRequest;

@@ -5,7 +5,7 @@ import com.pos.dto.request.CreateProductRequest;
 import com.pos.dto.response.ProductPageResponse;
 import com.pos.dto.response.ProductResponse;
 import com.pos.dto.request.UpdateProductRequest;
-import com.pos.exception.GlobalExceptionHandler;
+import com.pos.common.exception.GlobalExceptionHandler;
 import com.pos.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
