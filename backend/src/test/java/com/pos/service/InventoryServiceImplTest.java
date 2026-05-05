@@ -1,5 +1,7 @@
 package com.pos.service;
 
+import com.pos.service.impl.InventoryServiceImpl;
+
 import com.pos.dto.response.InventoryAdjustmentPageResponse;
 import com.pos.dto.request.InventoryAdjustmentRequest;
 import com.pos.dto.response.InventoryAdjustmentResponse;

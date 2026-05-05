@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface SaleService {
     SaleResponse create(CreateSaleRequest request, Authentication authentication);
+
     List<SaleResponse> findAll();
 }

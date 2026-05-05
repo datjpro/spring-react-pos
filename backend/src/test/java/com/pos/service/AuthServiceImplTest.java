@@ -1,5 +1,7 @@
 package com.pos.service;
 
+import com.pos.service.impl.AuthServiceImpl;
+
 import com.pos.config.JwtConfig;
 import com.pos.dto.request.LoginRequest;
 import com.pos.dto.response.LoginResponse;

@@ -1,4 +1,6 @@
-package com.pos.service;
+package com.pos.service.impl;
+
+import com.pos.service.*;
 
 import com.pos.common.exception.BadRequestException;
 import com.pos.repository.SaleItemRepository;
@@ -35,7 +37,7 @@ public class ReportServiceImpl implements ReportService {
     private final ProductRepository productRepository;
 
     public ReportServiceImpl(SaleItemRepository saleItemRepository,
-                             ProductRepository productRepository) {
+            ProductRepository productRepository) {
         this.saleItemRepository = saleItemRepository;
         this.productRepository = productRepository;
     }
@@ -45,7 +47,8 @@ public class ReportServiceImpl implements ReportService {
         validateDateRange(from, to);
         String normalizedGroupBy = normalizeGroupBy(groupBy);
 
-        List<RevenueDataPoint> dailyDataPoints = saleItemRepository.summarizeRevenueByDate(COMPLETED, from, to, branchId)
+        List<RevenueDataPoint> dailyDataPoints = saleItemRepository
+                .summarizeRevenueByDate(COMPLETED, from, to, branchId)
                 .stream()
                 .map(this::mapRevenueDataPoint)
                 .toList();
@@ -91,12 +94,12 @@ public class ReportServiceImpl implements ReportService {
                 productRepository.countByActiveTrue(),
                 toLong(totals[1]),
                 productRepository.countByActiveTrueAndStockLessThanEqual(DEFAULT_LOW_STOCK_THRESHOLD),
-                productRepository.countByActiveTrueAndStock(0)
-        );
+                productRepository.countByActiveTrueAndStock(0));
     }
 
     @Override
-    public String exportReportCsv(String type, Instant from, Instant to, String groupBy, int limit, String sortBy, Long branchId) {
+    public String exportReportCsv(String type, Instant from, Instant to, String groupBy, int limit, String sortBy,
+            Long branchId) {
         String normalizedType = normalizeType(type);
         return switch (normalizedType) {
             case "revenue" -> exportRevenueCsv(getRevenueReport(from, to, groupBy, branchId));
@@ -147,14 +150,15 @@ public class ReportServiceImpl implements ReportService {
         }
 
         Map<LocalDate, List<RevenueDataPoint>> grouped = dailyDataPoints.stream()
-                .collect(Collectors.groupingBy(dataPoint -> resolvePeriodStart(dataPoint.date(), groupBy), TreeMap::new, Collectors.toList()));
+                .collect(Collectors.groupingBy(dataPoint -> resolvePeriodStart(dataPoint.date(), groupBy), TreeMap::new,
+                        Collectors.toList()));
 
         return grouped.entrySet().stream()
                 .map(entry -> new RevenueDataPoint(
                         entry.getKey(),
-                        entry.getValue().stream().map(RevenueDataPoint::revenue).reduce(BigDecimal.ZERO, BigDecimal::add),
-                        entry.getValue().stream().map(RevenueDataPoint::orderCount).reduce(0L, Long::sum)
-                ))
+                        entry.getValue().stream().map(RevenueDataPoint::revenue).reduce(BigDecimal.ZERO,
+                                BigDecimal::add),
+                        entry.getValue().stream().map(RevenueDataPoint::orderCount).reduce(0L, Long::sum)))
                 .toList();
     }
 
@@ -219,7 +223,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private TopProductResponse mapTopProduct(Object[] row) {
-        return new TopProductResponse(toLong(row[0]), (String) row[1], (String) row[2], toLong(row[3]), toBigDecimal(row[4]));
+        return new TopProductResponse(toLong(row[0]), (String) row[1], (String) row[2], toLong(row[3]),
+                toBigDecimal(row[4]));
     }
 
     private LocalDate toLocalDate(Object value) {

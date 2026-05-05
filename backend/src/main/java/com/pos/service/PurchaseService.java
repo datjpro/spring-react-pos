@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface PurchaseService {
     PurchaseResponse create(CreatePurchaseRequest request, Authentication authentication);
+
     List<PurchaseResponse> findAll();
 }

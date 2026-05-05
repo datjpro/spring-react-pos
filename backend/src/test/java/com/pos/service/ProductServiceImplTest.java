@@ -1,5 +1,7 @@
 package com.pos.service;
 
+import com.pos.service.impl.ProductServiceImpl;
+
 import com.pos.dto.request.CreateProductRequest;
 import com.pos.dto.response.ProductPageResponse;
 import com.pos.dto.response.ProductResponse;

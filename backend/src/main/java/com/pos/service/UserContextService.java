@@ -9,9 +9,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserContextService {
     private final UserRepository userRepository;
-    public UserContextService(UserRepository userRepository){this.userRepository=userRepository;}
-    public UserEntity requireUser(Authentication authentication){
-        if (authentication == null || authentication.getName() == null) throw new UnauthorizedException("Authentication required");
-        return userRepository.findByUsernameAndActiveTrue(authentication.getName()).orElseThrow(() -> new UnauthorizedException("User not found"));
+
+    public UserContextService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public UserEntity requireUser(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null)
+            throw new UnauthorizedException("Authentication required");
+        return userRepository.findByUsernameAndActiveTrue(authentication.getName())
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
     }
 }

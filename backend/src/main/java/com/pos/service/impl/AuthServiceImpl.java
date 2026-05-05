@@ -1,4 +1,6 @@
-package com.pos.service;
+package com.pos.service.impl;
+
+import com.pos.service.*;
 
 import com.pos.config.JwtConfig;
 import com.pos.dto.request.LoginRequest;
@@ -31,10 +33,10 @@ public class AuthServiceImpl implements AuthService {
     private final JwtConfig jwtConfig;
 
     public AuthServiceImpl(AuthenticationManager authenticationManager,
-                           UserRepository userRepository,
-                           RefreshTokenRepository refreshTokenRepository,
-                           JwtTokenProvider jwtService,
-                           JwtConfig jwtConfig) {
+            UserRepository userRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            JwtTokenProvider jwtService,
+            JwtConfig jwtConfig) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -46,8 +48,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public LoginResponse login(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
-        );
+                new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
 
         String username = authentication.getName();
         UserEntity userEntity = userRepository.findByUsernameAndActiveTrue(username)
@@ -80,7 +81,8 @@ public class AuthServiceImpl implements AuthService {
         try {
             Claims claims = jwtService.extractClaims(refreshTokenEntity.getToken());
             String username = claims.getSubject();
-            String accessToken = jwtService.generateAccessToken(username, refreshTokenEntity.getUser().getRole().name());
+            String accessToken = jwtService.generateAccessToken(username,
+                    refreshTokenEntity.getUser().getRole().name());
             return new RefreshTokenResponse(accessToken, jwtConfig.accessTokenExpirationMs() / 1000);
         } catch (JwtException jwtException) {
             throw new UnauthorizedException("Refresh token is invalid");

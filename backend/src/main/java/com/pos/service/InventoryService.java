@@ -14,11 +14,11 @@ public interface InventoryService {
     InventoryAdjustmentResponse adjustInventory(InventoryAdjustmentRequest inventoryAdjustmentRequest, String username);
 
     InventoryAdjustmentPageResponse findAdjustments(int page,
-                                                    int size,
-                                                    Long productId,
-                                                    AdjustmentType adjustmentType,
-                                                    Instant from,
-                                                    Instant to);
+            int size,
+            Long productId,
+            AdjustmentType adjustmentType,
+            Instant from,
+            Instant to);
 
     List<LowStockProductResponse> findLowStockProducts(int threshold);
 }

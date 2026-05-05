@@ -1,5 +1,7 @@
 package com.pos.service;
 
+import com.pos.service.impl.PaymentServiceImpl;
+
 import com.pos.common.enums.OrderStatus;
 import com.pos.common.enums.PaymentMethod;
 import com.pos.common.exception.BadRequestException;

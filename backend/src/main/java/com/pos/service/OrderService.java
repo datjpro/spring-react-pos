@@ -13,6 +13,8 @@ public interface OrderService {
     OrderResponse createOrder(CreateOrderRequest createOrderRequest, String username);
 
     OrderResponse findOrderById(Long orderId);
+
     OrderPageResponse findOrders(int page, int size, OrderStatus status, Instant from, Instant to);
+
     OrderResponse cancelOrder(Long orderId, CancelOrderRequest cancelOrderRequest);
 }

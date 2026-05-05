@@ -1,4 +1,6 @@
-package com.pos.service;
+package com.pos.service.impl;
+
+import com.pos.service.*;
 
 import com.pos.dto.response.InventoryAdjustmentPageResponse;
 import com.pos.dto.request.InventoryAdjustmentRequest;
@@ -32,14 +34,15 @@ public class InventoryServiceImpl implements InventoryService {
     private final ProductRepository productRepository;
 
     public InventoryServiceImpl(InventoryAdjustmentRepository inventoryAdjustmentRepository,
-                                ProductRepository productRepository) {
+            ProductRepository productRepository) {
         this.inventoryAdjustmentRepository = inventoryAdjustmentRepository;
         this.productRepository = productRepository;
     }
 
     @Override
     @Transactional
-    public InventoryAdjustmentResponse adjustInventory(InventoryAdjustmentRequest inventoryAdjustmentRequest, String username) {
+    public InventoryAdjustmentResponse adjustInventory(InventoryAdjustmentRequest inventoryAdjustmentRequest,
+            String username) {
         ProductEntity productEntity = productRepository.findByIdAndActiveTrue(inventoryAdjustmentRequest.productId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -65,17 +68,18 @@ public class InventoryServiceImpl implements InventoryService {
         inventoryAdjustmentEntity.setNote(inventoryAdjustmentRequest.note());
         inventoryAdjustmentEntity.setCreatedBy(username);
 
-        InventoryAdjustmentEntity savedInventoryAdjustment = inventoryAdjustmentRepository.save(inventoryAdjustmentEntity);
+        InventoryAdjustmentEntity savedInventoryAdjustment = inventoryAdjustmentRepository
+                .save(inventoryAdjustmentEntity);
         return mapToResponse(savedInventoryAdjustment, productEntity.getStock());
     }
 
     @Override
     public InventoryAdjustmentPageResponse findAdjustments(int page,
-                                                           int size,
-                                                           Long productId,
-                                                           AdjustmentType adjustmentType,
-                                                           Instant from,
-                                                           Instant to) {
+            int size,
+            Long productId,
+            AdjustmentType adjustmentType,
+            Instant from,
+            Instant to) {
         if (from != null && to != null && from.isAfter(to)) {
             throw new BadRequestException("from must be before or equal to to");
         }
@@ -112,13 +116,13 @@ public class InventoryServiceImpl implements InventoryService {
                 adjustmentPage.getTotalElements(),
                 adjustmentPage.getTotalPages(),
                 adjustmentPage.getNumber(),
-                adjustmentPage.getSize()
-        );
+                adjustmentPage.getSize());
     }
 
     @Override
     public List<LowStockProductResponse> findLowStockProducts(int threshold) {
-        List<ProductEntity> products = productRepository.findByActiveTrueAndStockLessThanEqualOrderByStockAsc(threshold);
+        List<ProductEntity> products = productRepository
+                .findByActiveTrueAndStockLessThanEqualOrderByStockAsc(threshold);
         return products.stream()
                 .map(productEntity -> new LowStockProductResponse(
                         productEntity.getId(),
@@ -126,12 +130,12 @@ public class InventoryServiceImpl implements InventoryService {
                         productEntity.getName(),
                         productEntity.getStock(),
                         threshold,
-                        productEntity.getStock() == 0 ? "OUT_OF_STOCK" : "LOW_STOCK"
-                ))
+                        productEntity.getStock() == 0 ? "OUT_OF_STOCK" : "LOW_STOCK"))
                 .toList();
     }
 
-    private InventoryAdjustmentResponse mapToResponse(InventoryAdjustmentEntity inventoryAdjustmentEntity, Integer currentStock) {
+    private InventoryAdjustmentResponse mapToResponse(InventoryAdjustmentEntity inventoryAdjustmentEntity,
+            Integer currentStock) {
         return new InventoryAdjustmentResponse(
                 inventoryAdjustmentEntity.getId(),
                 inventoryAdjustmentEntity.getProduct().getId(),
@@ -142,7 +146,6 @@ public class InventoryServiceImpl implements InventoryService {
                 inventoryAdjustmentEntity.getNote(),
                 currentStock,
                 inventoryAdjustmentEntity.getCreatedBy(),
-                inventoryAdjustmentEntity.getCreatedAt()
-        );
+                inventoryAdjustmentEntity.getCreatedAt());
     }
 }

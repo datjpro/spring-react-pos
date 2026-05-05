@@ -1,4 +1,6 @@
-package com.pos.service;
+package com.pos.service.impl;
+
+import com.pos.service.*;
 
 import com.pos.dto.request.CreateProductRequest;
 import com.pos.dto.response.ProductPageResponse;
@@ -33,7 +35,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductPageResponse findProducts(int page, int size, String search, String category, String sort, String order) {
+    public ProductPageResponse findProducts(int page, int size, String search, String category, String sort,
+            String order) {
         String sortField = ALLOWED_SORT_FIELDS.contains(sort) ? sort : "name";
         Sort.Direction direction = "desc".equalsIgnoreCase(order) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
@@ -46,8 +49,7 @@ public class ProductServiceImpl implements ProductService {
                 String likeKeyword = "%" + search.toLowerCase(Locale.ROOT) + "%";
                 predicates.add(criteriaBuilder.or(
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), likeKeyword),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("sku")), likeKeyword)
-                ));
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("sku")), likeKeyword)));
             }
 
             if (category != null && !category.isBlank()) {
@@ -68,8 +70,7 @@ public class ProductServiceImpl implements ProductService {
                 productPage.getTotalElements(),
                 productPage.getTotalPages(),
                 productPage.getNumber(),
-                productPage.getSize()
-        );
+                productPage.getSize());
     }
 
     @Override
@@ -153,7 +154,6 @@ public class ProductServiceImpl implements ProductService {
                 productEntity.getDescription(),
                 productEntity.getImageUrl(),
                 productEntity.isActive(),
-                productEntity.getCreatedAt()
-        );
+                productEntity.getCreatedAt());
     }
 }

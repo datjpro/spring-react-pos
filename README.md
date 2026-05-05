@@ -1,20 +1,44 @@
-﻿# Spring Boot & React POS System
+# Spring Boot & React POS System
 
-Dự án này là một hệ thống quản lý bán hàng (POS) sử dụng **Spring Boot** làm backend và **React JS** làm frontend.
+D? ?n POS d?ng **Spring Boot** cho backend v? **React** cho frontend.
 
-## Cấu trúc thư mục
+## C?u tr?c
+- `backend/`: API Spring Boot
+- `frontend/`: UI React
+- `docs/`: t?i li?u thi?t k? v? API
 
-- **backend/**: Chứa mã nguồn Spring Boot.
-- **frontend/**: Chứa mã nguồn React JS.
-- **docs/**: Tài liệu thiết kế và đặc tả API.
-- **AGENTS.md**: Hướng dẫn dành cho AI Agent.
+## Y?u c?u
+- Java 17+
+- Node.js 18+
+- Docker + Docker Compose
 
-## Yêu cầu môi trường
+## Ch?y backend b?ng Docker
 
-- Java 17+ (cho Spring Boot)
-- Node.js 18+ (cho React JS)
-- MySQL / PostgreSQL (tùy cấu hình)
+1. T?o file env t? m?u:
+   - `Copy-Item .env.example .env`
+2. Ch?y PostgreSQL + backend:
+   - `docker compose up -d --build`
+3. Xem log backend:
+   - `docker compose logs -f backend`
+4. D?ng d?ch v?:
+   - `docker compose down`
 
-## Bắt đầu
+## Port m?c ??nh
+- Backend API: `http://localhost:8080`
+- PostgreSQL: `localhost:5432`
 
-Xem chi tiết hướng dẫn cài đặt trong từng thư mục cụ thể (khi đã khởi tạo).
+## Bi?n m?i tr??ng Docker
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_PORT`
+- `BACKEND_PORT`
+- `JWT_SECRET`
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+- `ADMIN_ROLE`
+
+## Ghi ch?
+- Backend container ch?y profile `prod`.
+- Flyway t? migrate khi app kh?i ??ng.
+- Admin bootstrap m?c ??nh: `admin / postgres` n?u kh?ng ??i trong `.env`.

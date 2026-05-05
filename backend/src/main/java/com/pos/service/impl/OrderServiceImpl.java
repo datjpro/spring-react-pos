@@ -1,4 +1,6 @@
-package com.pos.service;
+package com.pos.service.impl;
+
+import com.pos.service.*;
 
 import com.pos.common.enums.OrderStatus;
 import com.pos.common.exception.BadRequestException;
@@ -39,8 +41,8 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
 
     public OrderServiceImpl(OrderRepository orderRepository,
-                            ProductRepository productRepository,
-                            UserRepository userRepository) {
+            ProductRepository productRepository,
+            UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
@@ -82,7 +84,8 @@ public class OrderServiceImpl implements OrderService {
             orderEntity.addItem(orderItemEntity);
         }
 
-        BigDecimal discountAmount = createOrderRequest.discountAmount() == null ? BigDecimal.ZERO : createOrderRequest.discountAmount();
+        BigDecimal discountAmount = createOrderRequest.discountAmount() == null ? BigDecimal.ZERO
+                : createOrderRequest.discountAmount();
         if (discountAmount.compareTo(subtotal) > 0) {
             throw new BadRequestException("discountAmount must be less than or equal to subtotal");
         }
@@ -121,7 +124,8 @@ public class OrderServiceImpl implements OrderService {
 
         Page<OrderEntity> orderPage = orderRepository.findAll(specification, pageable);
         List<OrderResponse> content = orderPage.getContent().stream().map(this::mapToResponse).toList();
-        return new OrderPageResponse(content, orderPage.getTotalElements(), orderPage.getTotalPages(), orderPage.getNumber(), orderPage.getSize());
+        return new OrderPageResponse(content, orderPage.getTotalElements(), orderPage.getTotalPages(),
+                orderPage.getNumber(), orderPage.getSize());
     }
 
     @Override
@@ -158,8 +162,7 @@ public class OrderServiceImpl implements OrderService {
                         orderItem.getSku(),
                         orderItem.getUnitPrice(),
                         orderItem.getQuantity(),
-                        orderItem.getLineTotal()
-                ))
+                        orderItem.getLineTotal()))
                 .toList();
 
         return new OrderResponse(
@@ -171,7 +174,6 @@ public class OrderServiceImpl implements OrderService {
                 orderEntity.getDiscountAmount(),
                 orderEntity.getTotalAmount(),
                 items,
-                orderEntity.getCreatedAt()
-        );
+                orderEntity.getCreatedAt());
     }
 }

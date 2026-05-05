@@ -15,5 +15,6 @@ public interface ReportService {
 
     InventorySummaryResponse getInventorySummary();
 
-    String exportReportCsv(String type, Instant from, Instant to, String groupBy, int limit, String sortBy, Long branchId);
+    String exportReportCsv(String type, Instant from, Instant to, String groupBy, int limit, String sortBy,
+            Long branchId);
 }

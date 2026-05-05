@@ -1,4 +1,6 @@
-package com.pos.service;
+package com.pos.service.impl;
+
+import com.pos.service.*;
 
 import com.pos.common.enums.OrderStatus;
 import com.pos.common.enums.PaymentMethod;
@@ -43,7 +45,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         BigDecimal amountPaid = orderEntity.getTotalAmount();
         BigDecimal amountReceived = createPaymentRequest.amountReceived();
-        BigDecimal changeAmount = calculateChangeAmount(createPaymentRequest.paymentMethod(), amountPaid, amountReceived);
+        BigDecimal changeAmount = calculateChangeAmount(createPaymentRequest.paymentMethod(), amountPaid,
+                amountReceived);
 
         PaymentEntity paymentEntity = new PaymentEntity();
         paymentEntity.setOrder(orderEntity);
@@ -78,7 +81,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .toList();
     }
 
-    private BigDecimal calculateChangeAmount(PaymentMethod paymentMethod, BigDecimal amountPaid, BigDecimal amountReceived) {
+    private BigDecimal calculateChangeAmount(PaymentMethod paymentMethod, BigDecimal amountPaid,
+            BigDecimal amountReceived) {
         if (paymentMethod == PaymentMethod.CASH) {
             if (amountReceived.compareTo(amountPaid) < 0) {
                 throw new BadRequestException("amountReceived must be greater than or equal to totalAmount");
@@ -118,7 +122,6 @@ public class PaymentServiceImpl implements PaymentService {
                 paymentEntity.getAmountReceived(),
                 paymentEntity.getChangeAmount(),
                 paymentEntity.getNote(),
-                paymentEntity.getCreatedAt()
-        );
+                paymentEntity.getCreatedAt());
     }
 }
