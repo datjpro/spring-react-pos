@@ -1,11 +1,11 @@
-package com.pos.report.service;
+package com.pos.service;
 
-import com.pos.common.exception.BadRequestException;
-import com.pos.product.repository.ProductRepository;
-import com.pos.report.dto.InventorySummaryResponse;
-import com.pos.report.dto.RevenueReportResponse;
-import com.pos.report.dto.TopProductResponse;
-import com.pos.sale.repository.SaleItemRepository;
+import com.pos.exception.BadRequestException;
+import com.pos.repository.ProductRepository;
+import com.pos.dto.response.InventorySummaryResponse;
+import com.pos.dto.response.RevenueReportResponse;
+import com.pos.dto.response.TopProductResponse;
+import com.pos.repository.SaleItemRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

@@ -1,6 +1,6 @@
 package com.pos.common.controller;
 
-import com.pos.common.dto.TestValidationRequest;
+import com.pos.dto.response.TestValidationRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -1,16 +1,17 @@
-package com.pos.auth.service;
+package com.pos.service;
 
 import com.pos.config.JwtConfig;
-import com.pos.auth.dto.LoginRequest;
-import com.pos.auth.dto.LoginResponse;
-import com.pos.auth.dto.RefreshTokenRequest;
-import com.pos.auth.dto.RefreshTokenResponse;
-import com.pos.auth.entity.RefreshTokenEntity;
+import com.pos.dto.request.LoginRequest;
+import com.pos.dto.response.LoginResponse;
+import com.pos.dto.request.RefreshTokenRequest;
+import com.pos.dto.response.RefreshTokenResponse;
+import com.pos.entity.RefreshTokenEntity;
 import com.pos.common.enums.Role;
-import com.pos.user.entity.UserEntity;
-import com.pos.common.exception.UnauthorizedException;
-import com.pos.auth.repository.RefreshTokenRepository;
-import com.pos.user.repository.UserRepository;
+import com.pos.entity.UserEntity;
+import com.pos.exception.UnauthorizedException;
+import com.pos.security.JwtTokenProvider;
+import com.pos.repository.RefreshTokenRepository;
+import com.pos.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +49,7 @@ class AuthServiceImplTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     private JwtConfig jwtConfig;
-    private JwtService jwtService;
+    private JwtTokenProvider jwtService;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -60,7 +61,7 @@ class AuthServiceImplTest {
                 3600000,
                 604800000
         );
-        jwtService = new JwtService(jwtConfig);
+        jwtService = new JwtTokenProvider(jwtConfig);
         authService = new AuthServiceImpl(authenticationManager, userRepository, refreshTokenRepository, jwtService, jwtConfig);
     }
 

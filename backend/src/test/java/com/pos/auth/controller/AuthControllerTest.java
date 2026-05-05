@@ -1,12 +1,12 @@
-package com.pos.auth.controller;
+package com.pos.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pos.auth.dto.LoginRequest;
-import com.pos.auth.dto.LoginResponse;
-import com.pos.auth.dto.RefreshTokenRequest;
-import com.pos.auth.dto.RefreshTokenResponse;
-import com.pos.common.exception.GlobalExceptionHandler;
-import com.pos.auth.service.AuthService;
+import com.pos.dto.request.LoginRequest;
+import com.pos.dto.response.LoginResponse;
+import com.pos.dto.request.RefreshTokenRequest;
+import com.pos.dto.response.RefreshTokenResponse;
+import com.pos.exception.GlobalExceptionHandler;
+import com.pos.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

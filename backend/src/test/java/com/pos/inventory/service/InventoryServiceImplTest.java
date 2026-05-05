@@ -1,15 +1,15 @@
-package com.pos.inventory.service;
+package com.pos.service;
 
-import com.pos.inventory.dto.InventoryAdjustmentPageResponse;
-import com.pos.inventory.dto.InventoryAdjustmentRequest;
-import com.pos.inventory.dto.InventoryAdjustmentResponse;
-import com.pos.inventory.dto.LowStockProductResponse;
-import com.pos.inventory.entity.InventoryAdjustmentEntity;
+import com.pos.dto.response.InventoryAdjustmentPageResponse;
+import com.pos.dto.request.InventoryAdjustmentRequest;
+import com.pos.dto.response.InventoryAdjustmentResponse;
+import com.pos.dto.response.LowStockProductResponse;
+import com.pos.entity.InventoryAdjustmentEntity;
 import com.pos.common.enums.AdjustmentType;
-import com.pos.product.entity.ProductEntity;
-import com.pos.common.exception.BadRequestException;
-import com.pos.inventory.repository.InventoryAdjustmentRepository;
-import com.pos.product.repository.ProductRepository;
+import com.pos.entity.ProductEntity;
+import com.pos.exception.BadRequestException;
+import com.pos.repository.InventoryAdjustmentRepository;
+import com.pos.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

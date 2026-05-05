@@ -1,12 +1,12 @@
-package com.pos.payment.controller;
+package com.pos.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.common.enums.PaymentMethod;
 import com.pos.common.enums.PaymentStatus;
-import com.pos.common.exception.GlobalExceptionHandler;
-import com.pos.payment.dto.CreatePaymentRequest;
-import com.pos.payment.dto.PaymentResponse;
-import com.pos.payment.service.PaymentService;
+import com.pos.exception.GlobalExceptionHandler;
+import com.pos.dto.request.CreatePaymentRequest;
+import com.pos.dto.response.PaymentResponse;
+import com.pos.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

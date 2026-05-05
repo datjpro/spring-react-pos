@@ -1,13 +1,13 @@
-package com.pos.product.service;
+package com.pos.service;
 
-import com.pos.product.dto.CreateProductRequest;
-import com.pos.product.dto.ProductPageResponse;
-import com.pos.product.dto.ProductResponse;
-import com.pos.product.dto.UpdateProductRequest;
-import com.pos.product.entity.ProductEntity;
-import com.pos.common.exception.DuplicateResourceException;
-import com.pos.common.exception.ResourceNotFoundException;
-import com.pos.product.repository.ProductRepository;
+import com.pos.dto.request.CreateProductRequest;
+import com.pos.dto.response.ProductPageResponse;
+import com.pos.dto.response.ProductResponse;
+import com.pos.dto.request.UpdateProductRequest;
+import com.pos.entity.ProductEntity;
+import com.pos.exception.DuplicateResourceException;
+import com.pos.exception.ResourceNotFoundException;
+import com.pos.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

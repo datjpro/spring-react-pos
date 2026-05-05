@@ -1,11 +1,11 @@
-package com.pos.report.controller;
+package com.pos.controller;
 
-import com.pos.common.exception.GlobalExceptionHandler;
-import com.pos.report.dto.InventorySummaryResponse;
-import com.pos.report.dto.RevenueDataPoint;
-import com.pos.report.dto.RevenueReportResponse;
-import com.pos.report.dto.TopProductResponse;
-import com.pos.report.service.ReportService;
+import com.pos.exception.GlobalExceptionHandler;
+import com.pos.dto.response.InventorySummaryResponse;
+import com.pos.dto.response.RevenueDataPoint;
+import com.pos.dto.response.RevenueReportResponse;
+import com.pos.dto.response.TopProductResponse;
+import com.pos.service.ReportService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

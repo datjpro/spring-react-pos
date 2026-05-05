@@ -1,17 +1,17 @@
-package com.pos.common.service;
+package com.pos.security;
 
-import com.pos.branch.entity.BranchEntity;
+import com.pos.entity.BranchEntity;
 import com.pos.common.enums.Role;
-import com.pos.common.exception.BadRequestException;
-import com.pos.user.entity.UserEntity;
+import com.pos.exception.BadRequestException;
+import com.pos.entity.UserEntity;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class BranchAccessServiceTest {
+class BranchAccessGuardTest {
 
-    private final BranchAccessService branchAccessService = new BranchAccessService();
+    private final BranchAccessGuard branchAccessService = new BranchAccessGuard();
 
     @Test
     void shouldAllowAdminAccessAnyBranch() {

@@ -1,13 +1,13 @@
-package com.pos.inventory.controller;
+package com.pos.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pos.inventory.dto.InventoryAdjustmentPageResponse;
-import com.pos.inventory.dto.InventoryAdjustmentRequest;
-import com.pos.inventory.dto.InventoryAdjustmentResponse;
-import com.pos.inventory.dto.LowStockProductResponse;
+import com.pos.dto.response.InventoryAdjustmentPageResponse;
+import com.pos.dto.request.InventoryAdjustmentRequest;
+import com.pos.dto.response.InventoryAdjustmentResponse;
+import com.pos.dto.response.LowStockProductResponse;
 import com.pos.common.enums.AdjustmentType;
-import com.pos.common.exception.GlobalExceptionHandler;
-import com.pos.inventory.service.InventoryService;
+import com.pos.exception.GlobalExceptionHandler;
+import com.pos.service.InventoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

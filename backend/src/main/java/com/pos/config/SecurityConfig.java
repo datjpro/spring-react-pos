@@ -1,7 +1,7 @@
 package com.pos.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pos.common.dto.ErrorResponse;
+import com.pos.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -34,9 +34,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final com.pos.security.JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(ObjectMapper objectMapper, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(ObjectMapper objectMapper, com.pos.security.JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.objectMapper = objectMapper;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }

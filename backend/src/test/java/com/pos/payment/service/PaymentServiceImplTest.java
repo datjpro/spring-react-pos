@@ -1,15 +1,15 @@
-package com.pos.payment.service;
+package com.pos.service;
 
 import com.pos.common.enums.OrderStatus;
 import com.pos.common.enums.PaymentMethod;
-import com.pos.common.exception.BadRequestException;
-import com.pos.order.entity.OrderEntity;
-import com.pos.order.repository.OrderRepository;
-import com.pos.payment.dto.CreatePaymentRequest;
-import com.pos.payment.dto.PaymentResponse;
-import com.pos.payment.entity.PaymentEntity;
-import com.pos.payment.repository.PaymentRepository;
-import com.pos.user.entity.UserEntity;
+import com.pos.exception.BadRequestException;
+import com.pos.entity.OrderEntity;
+import com.pos.repository.OrderRepository;
+import com.pos.dto.request.CreatePaymentRequest;
+import com.pos.dto.response.PaymentResponse;
+import com.pos.entity.PaymentEntity;
+import com.pos.repository.PaymentRepository;
+import com.pos.entity.UserEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

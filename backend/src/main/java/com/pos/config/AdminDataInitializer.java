@@ -1,8 +1,8 @@
 package com.pos.config;
 
 import com.pos.common.enums.Role;
-import com.pos.user.entity.UserEntity;
-import com.pos.user.repository.UserRepository;
+import com.pos.entity.UserEntity;
+import com.pos.repository.UserRepository;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

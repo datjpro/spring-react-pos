@@ -1,15 +1,15 @@
-package com.pos.order.controller;
+package com.pos.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.common.enums.OrderStatus;
-import com.pos.common.exception.GlobalExceptionHandler;
-import com.pos.order.dto.CancelOrderRequest;
-import com.pos.order.dto.CreateOrderItemRequest;
-import com.pos.order.dto.CreateOrderRequest;
-import com.pos.order.dto.OrderItemResponse;
-import com.pos.order.dto.OrderPageResponse;
-import com.pos.order.dto.OrderResponse;
-import com.pos.order.service.OrderService;
+import com.pos.exception.GlobalExceptionHandler;
+import com.pos.dto.request.CancelOrderRequest;
+import com.pos.dto.request.CreateOrderItemRequest;
+import com.pos.dto.request.CreateOrderRequest;
+import com.pos.dto.response.OrderItemResponse;
+import com.pos.dto.response.OrderPageResponse;
+import com.pos.dto.response.OrderResponse;
+import com.pos.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

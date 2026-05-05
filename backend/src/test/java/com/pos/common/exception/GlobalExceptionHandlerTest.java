@@ -1,4 +1,4 @@
-package com.pos.common.exception;
+package com.pos.exception;
 
 import com.pos.common.controller.TestValidationController;
 import org.junit.jupiter.api.BeforeEach;

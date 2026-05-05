@@ -1,12 +1,12 @@
-package com.pos.product.controller;
+package com.pos.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pos.product.dto.CreateProductRequest;
-import com.pos.product.dto.ProductPageResponse;
-import com.pos.product.dto.ProductResponse;
-import com.pos.product.dto.UpdateProductRequest;
-import com.pos.common.exception.GlobalExceptionHandler;
-import com.pos.product.service.ProductService;
+import com.pos.dto.request.CreateProductRequest;
+import com.pos.dto.response.ProductPageResponse;
+import com.pos.dto.response.ProductResponse;
+import com.pos.dto.request.UpdateProductRequest;
+import com.pos.exception.GlobalExceptionHandler;
+import com.pos.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
