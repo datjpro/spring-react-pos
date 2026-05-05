@@ -30,13 +30,7 @@ class BranchAccessGuardTest {
     @Test
     void shouldRejectCrossBranchAccess() {
         BranchEntity branch = new BranchEntity();
-        try {
-            var field = BranchEntity.class.getDeclaredField("id");
-            field.setAccessible(true);
-            field.set(branch, 1L);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        branch.setId(1L);
         UserEntity user = new UserEntity();
         user.setRole(Role.STAFF);
         user.setBranch(branch);

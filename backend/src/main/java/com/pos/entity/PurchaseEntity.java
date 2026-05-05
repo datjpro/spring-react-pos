@@ -1,19 +1,20 @@
 package com.pos.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.pos.entity.BranchEntity;
 import com.pos.common.enums.PurchaseStatus;
 import com.pos.entity.SupplierEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.*;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "purchases")
-public class PurchaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class PurchaseEntity extends CreatedEntity {
     @Column(name = "purchase_code", nullable = false, unique = true, length = 30)
     private String purchaseCode;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,78 +30,15 @@ public class PurchaseEntity {
     private BigDecimal totalAmount;
     @Column(name = "created_by", nullable = false, length = 50)
     private String createdBy;
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseItemEntity> items = new ArrayList<>();
-
-    @PrePersist
-    public void prePersist() {
-        createdAt = Instant.now();
-    }
 
     public void addItem(PurchaseItemEntity item) {
         items.add(item);
         item.setPurchase(this);
     }
 
-    public Long getId() {
-        return id;
-    }
 
-    public String getPurchaseCode() {
-        return purchaseCode;
-    }
 
-    public void setPurchaseCode(String purchaseCode) {
-        this.purchaseCode = purchaseCode;
-    }
 
-    public SupplierEntity getSupplier() {
-        return supplier;
-    }
-
-    public void setSupplier(SupplierEntity supplier) {
-        this.supplier = supplier;
-    }
-
-    public BranchEntity getBranch() {
-        return branch;
-    }
-
-    public void setBranch(BranchEntity branch) {
-        this.branch = branch;
-    }
-
-    public PurchaseStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(PurchaseStatus status) {
-        this.status = status;
-    }
-
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public List<PurchaseItemEntity> getItems() {
-        return items;
-    }
 }
