@@ -1,8 +1,7 @@
 package com.pos.report.service;
 
 import com.pos.common.exception.BadRequestException;
-import com.pos.order.repository.OrderItemRepository;
-import com.pos.order.repository.OrderRepository;
+import com.pos.sale.repository.SaleItemRepository;
 import com.pos.product.repository.ProductRepository;
 import com.pos.report.dto.InventorySummaryResponse;
 import com.pos.report.dto.RevenueDataPoint;
@@ -23,7 +22,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static com.pos.common.enums.OrderStatus.COMPLETED;
+import static com.pos.common.enums.SaleStatus.COMPLETED;
 
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -32,24 +31,21 @@ public class ReportServiceImpl implements ReportService {
     private static final int MAX_TOP_PRODUCT_LIMIT = 100;
     private static final long MAX_REPORT_RANGE_DAYS = 365;
 
-    private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
+    private final SaleItemRepository saleItemRepository;
     private final ProductRepository productRepository;
 
-    public ReportServiceImpl(OrderRepository orderRepository,
-                             OrderItemRepository orderItemRepository,
+    public ReportServiceImpl(SaleItemRepository saleItemRepository,
                              ProductRepository productRepository) {
-        this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
+        this.saleItemRepository = saleItemRepository;
         this.productRepository = productRepository;
     }
 
     @Override
-    public RevenueReportResponse getRevenueReport(Instant from, Instant to, String groupBy) {
+    public RevenueReportResponse getRevenueReport(Instant from, Instant to, String groupBy, Long branchId) {
         validateDateRange(from, to);
         String normalizedGroupBy = normalizeGroupBy(groupBy);
 
-        List<RevenueDataPoint> dailyDataPoints = orderRepository.summarizeRevenueByDate(COMPLETED, from, to)
+        List<RevenueDataPoint> dailyDataPoints = saleItemRepository.summarizeRevenueByDate(COMPLETED, from, to, branchId)
                 .stream()
                 .map(this::mapRevenueDataPoint)
                 .toList();
@@ -66,7 +62,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<TopProductResponse> getTopProducts(Instant from, Instant to, int limit, String sortBy) {
+    public List<TopProductResponse> getTopProducts(Instant from, Instant to, int limit, String sortBy, Long branchId) {
         validateDateRange(from, to);
         if (limit < 1 || limit > MAX_TOP_PRODUCT_LIMIT) {
             throw new BadRequestException("limit must be between 1 and 100");
@@ -79,7 +75,7 @@ public class ReportServiceImpl implements ReportService {
                 ? Comparator.comparing(TopProductResponse::totalRevenue)
                 : Comparator.comparing(TopProductResponse::totalQuantity);
 
-        return orderItemRepository.summarizeTopProducts(COMPLETED, from, to)
+        return saleItemRepository.summarizeTopProducts(COMPLETED, from, to, branchId)
                 .stream()
                 .map(this::mapTopProduct)
                 .sorted(comparator.reversed())
@@ -100,11 +96,11 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public String exportReportCsv(String type, Instant from, Instant to, String groupBy, int limit, String sortBy) {
+    public String exportReportCsv(String type, Instant from, Instant to, String groupBy, int limit, String sortBy, Long branchId) {
         String normalizedType = normalizeType(type);
         return switch (normalizedType) {
-            case "revenue" -> exportRevenueCsv(getRevenueReport(from, to, groupBy));
-            case "top-products" -> exportTopProductsCsv(getTopProducts(from, to, limit, sortBy));
+            case "revenue" -> exportRevenueCsv(getRevenueReport(from, to, groupBy, branchId));
+            case "top-products" -> exportTopProductsCsv(getTopProducts(from, to, limit, sortBy, branchId));
             case "inventory-summary" -> exportInventorySummaryCsv(getInventorySummary());
             default -> throw new BadRequestException("Unsupported report type");
         };

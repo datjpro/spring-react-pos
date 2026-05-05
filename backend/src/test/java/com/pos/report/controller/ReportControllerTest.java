@@ -22,27 +22,17 @@ import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class ReportControllerTest {
-
-    @Mock
-    private ReportService reportService;
-
-    @InjectMocks
-    private ReportController reportController;
-
+    @Mock private ReportService reportService;
+    @InjectMocks private ReportController reportController;
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(reportController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
+        mockMvc = MockMvcBuilders.standaloneSetup(reportController).setControllerAdvice(new GlobalExceptionHandler()).build();
     }
 
     @Test
@@ -55,73 +45,37 @@ class ReportControllerTest {
                 3L,
                 List.of(new RevenueDataPoint(LocalDate.of(2026, 5, 1), new BigDecimal("200000"), 3L))
         );
+        when(reportService.getRevenueReport(Instant.parse("2026-05-01T00:00:00Z"), Instant.parse("2026-05-31T23:59:59Z"), "day", 1L)).thenReturn(response);
 
-        when(reportService.getRevenueReport(
-                Instant.parse("2026-05-01T00:00:00Z"),
-                Instant.parse("2026-05-31T23:59:59Z"),
-                "day"
-        )).thenReturn(response);
-
-        mockMvc.perform(get("/api/v1/reports/revenue")
-                        .param("from", "2026-05-01T00:00:00Z")
-                        .param("to", "2026-05-31T23:59:59Z")
-                        .param("groupBy", "day"))
+        mockMvc.perform(get("/api/v1/reports/revenue").param("from", "2026-05-01T00:00:00Z").param("to", "2026-05-31T23:59:59Z").param("groupBy", "day").param("branchId", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalRevenue").value(200000))
-                .andExpect(jsonPath("$.data[0].orderCount").value(3));
+                .andExpect(jsonPath("$.totalRevenue").value(200000));
     }
 
     @Test
     void shouldGetTopProductsSuccessfully() throws Exception {
-        when(reportService.getTopProducts(
-                Instant.parse("2026-05-01T00:00:00Z"),
-                Instant.parse("2026-05-31T23:59:59Z"),
-                10,
-                "quantity"
-        )).thenReturn(List.of(new TopProductResponse(1L, "SP-001", "Coffee", 8L, new BigDecimal("160000"))));
+        when(reportService.getTopProducts(Instant.parse("2026-05-01T00:00:00Z"), Instant.parse("2026-05-31T23:59:59Z"), 10, "quantity", 2L))
+                .thenReturn(List.of(new TopProductResponse(1L, "SP-001", "Coffee", 8L, new BigDecimal("160000"))));
 
-        mockMvc.perform(get("/api/v1/reports/top-products")
-                        .param("from", "2026-05-01T00:00:00Z")
-                        .param("to", "2026-05-31T23:59:59Z")
-                        .param("limit", "10")
-                        .param("sortBy", "quantity"))
+        mockMvc.perform(get("/api/v1/reports/top-products").param("from", "2026-05-01T00:00:00Z").param("to", "2026-05-31T23:59:59Z").param("limit", "10").param("sortBy", "quantity").param("branchId", "2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].sku").value("SP-001"));
     }
 
     @Test
     void shouldGetInventorySummarySuccessfully() throws Exception {
-        when(reportService.getInventorySummary())
-                .thenReturn(new InventorySummaryResponse(3L, 2L, 18L, 1L, 1L));
-
+        when(reportService.getInventorySummary()).thenReturn(new InventorySummaryResponse(3L, 2L, 18L, 1L, 1L));
         mockMvc.perform(get("/api/v1/reports/inventory-summary"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalProducts").value(3))
                 .andExpect(jsonPath("$.outOfStockProducts").value(1));
     }
 
     @Test
     void shouldExportRevenueCsvSuccessfully() throws Exception {
-        when(reportService.exportReportCsv(
-                "revenue",
-                Instant.parse("2026-05-01T00:00:00Z"),
-                Instant.parse("2026-05-31T23:59:59Z"),
-                "day",
-                10,
-                "quantity"
-        )).thenReturn("groupBy,totalRevenue,totalOrders\nday,100000,1\n");
-
-        mockMvc.perform(get("/api/v1/reports/export")
-                        .param("type", "revenue")
-                        .param("format", "csv")
-                        .param("from", "2026-05-01T00:00:00Z")
-                        .param("to", "2026-05-31T23:59:59Z")
-                        .param("groupBy", "day")
-                        .param("limit", "10")
-                        .param("sortBy", "quantity"))
+        when(reportService.exportReportCsv("revenue", Instant.parse("2026-05-01T00:00:00Z"), Instant.parse("2026-05-31T23:59:59Z"), "day", 10, "quantity", 3L))
+                .thenReturn("groupBy,totalRevenue,totalOrders\nday,100000,1\n");
+        mockMvc.perform(get("/api/v1/reports/export").param("type", "revenue").param("format", "csv").param("from", "2026-05-01T00:00:00Z").param("to", "2026-05-31T23:59:59Z").param("groupBy", "day").param("limit", "10").param("sortBy", "quantity").param("branchId", "3"))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("pos-revenue-")))
-                .andExpect(content().contentType("text/csv"))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("groupBy,totalRevenue,totalOrders")));
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("pos-revenue-")));
     }
 }

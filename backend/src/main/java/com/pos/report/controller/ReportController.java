@@ -38,8 +38,9 @@ public class ReportController {
     public ResponseEntity<RevenueReportResponse> getRevenueReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
-            @RequestParam(defaultValue = "day") String groupBy) {
-        return ResponseEntity.ok(reportService.getRevenueReport(from, to, groupBy));
+            @RequestParam(defaultValue = "day") String groupBy,
+            @RequestParam(required = false) @Min(value = 1, message = "branchId must be greater than 0") Long branchId) {
+        return ResponseEntity.ok(reportService.getRevenueReport(from, to, groupBy, branchId));
     }
 
     @GetMapping("/top-products")
@@ -47,8 +48,9 @@ public class ReportController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
             @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit must be greater than or equal to 1") @Max(value = 100, message = "limit must be less than or equal to 100") int limit,
-            @RequestParam(defaultValue = "quantity") String sortBy) {
-        return ResponseEntity.ok(reportService.getTopProducts(from, to, limit, sortBy));
+            @RequestParam(defaultValue = "quantity") String sortBy,
+            @RequestParam(required = false) @Min(value = 1, message = "branchId must be greater than 0") Long branchId) {
+        return ResponseEntity.ok(reportService.getTopProducts(from, to, limit, sortBy, branchId));
     }
 
     @GetMapping("/inventory-summary")
@@ -64,12 +66,13 @@ public class ReportController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
             @RequestParam(defaultValue = "day") String groupBy,
             @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit must be greater than or equal to 1") @Max(value = 100, message = "limit must be less than or equal to 100") int limit,
-            @RequestParam(defaultValue = "quantity") String sortBy) {
+            @RequestParam(defaultValue = "quantity") String sortBy,
+            @RequestParam(required = false) @Min(value = 1, message = "branchId must be greater than 0") Long branchId) {
         if (!"csv".equalsIgnoreCase(format)) {
             throw new com.pos.common.exception.BadRequestException("Phase 3 supports csv export only");
         }
 
-        String csvContent = reportService.exportReportCsv(type, from, to, groupBy, limit, sortBy);
+        String csvContent = reportService.exportReportCsv(type, from, to, groupBy, limit, sortBy, branchId);
         String filename = "pos-" + type.toLowerCase() + "-" + LocalDate.now() + ".csv";
 
         return ResponseEntity.ok()
