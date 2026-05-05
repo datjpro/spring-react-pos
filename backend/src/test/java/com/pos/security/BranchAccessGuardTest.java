@@ -1,9 +1,9 @@
 package com.pos.security;
 
-import com.pos.entity.BranchEntity;
+import com.pos.entities.BranchEntity;
 import com.pos.common.enums.Role;
 import com.pos.common.exception.BadRequestException;
-import com.pos.entity.UserEntity;
+import com.pos.entities.UserEntity;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
