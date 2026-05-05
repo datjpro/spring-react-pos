@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/pos_db?createDatabaseIfNotExist=true
-    username: root
-    password: 123456
+    url: jdbc:postgresql://localhost:5432/pos_db
+    username: postgres
+    password: postgres
 
 logging:
   level:

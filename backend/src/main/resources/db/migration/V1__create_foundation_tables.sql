@@ -1,34 +1,40 @@
-CREATE TABLE users (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    username VARCHAR(50) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL,
+CREATE TABLE branches (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    address VARCHAR(500),
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT uk_users_username UNIQUE (username)
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    branch_id BIGINT REFERENCES branches(id),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE refresh_tokens (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    token VARCHAR(512) NOT NULL,
-    user_id BIGINT NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(512) NOT NULL UNIQUE,
+    user_id BIGINT NOT NULL REFERENCES users(id),
     expiry_at TIMESTAMP NOT NULL,
     revoked BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT uk_refresh_tokens_token UNIQUE (token),
-    CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users(id)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE products (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    sku VARCHAR(50) NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    sku VARCHAR(50) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     category VARCHAR(100),
-    price DECIMAL(15, 2) NOT NULL,
-    cost DECIMAL(15, 2),
+    price NUMERIC(15, 2) NOT NULL,
+    cost NUMERIC(15, 2),
     stock INT NOT NULL DEFAULT 0,
     unit VARCHAR(50) NOT NULL,
     barcode VARCHAR(100),
@@ -36,22 +42,18 @@ CREATE TABLE products (
     image_url VARCHAR(500),
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT uk_products_sku UNIQUE (sku)
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE inventory_adjustments (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    product_id BIGINT NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id),
     adjustment_type VARCHAR(20) NOT NULL,
     quantity INT NOT NULL,
     reason VARCHAR(255) NOT NULL,
     note VARCHAR(500),
     created_by VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_inventory_adjustments_product FOREIGN KEY (product_id) REFERENCES products(id)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_products_name ON products(name);

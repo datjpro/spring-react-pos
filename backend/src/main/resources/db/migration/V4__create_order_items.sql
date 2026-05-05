@@ -1,18 +1,15 @@
 CREATE TABLE order_items (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    order_id BIGINT NOT NULL,
-    product_id BIGINT NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    order_id BIGINT NOT NULL REFERENCES orders(id),
+    product_id BIGINT NOT NULL REFERENCES products(id),
     product_name VARCHAR(255) NOT NULL,
     sku VARCHAR(50) NOT NULL,
-    unit_price DECIMAL(15, 2) NOT NULL,
+    unit_price NUMERIC(15, 2) NOT NULL,
     quantity INT NOT NULL,
-    line_total DECIMAL(15, 2) NOT NULL,
+    line_total NUMERIC(15, 2) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id),
-    CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(id),
-    INDEX idx_order_items_product (product_id),
-    INDEX idx_order_items_order (order_id)
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX idx_order_items_product ON order_items(product_id);
+CREATE INDEX idx_order_items_order ON order_items(order_id);
