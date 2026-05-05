@@ -2,7 +2,7 @@ package com.pos.service;
 
 import com.pos.common.enums.OrderStatus;
 import com.pos.common.enums.Role;
-import com.pos.exception.BadRequestException;
+import com.pos.common.exception.BadRequestException;
 import com.pos.dto.request.CancelOrderRequest;
 import com.pos.dto.request.CreateOrderItemRequest;
 import com.pos.dto.request.CreateOrderRequest;

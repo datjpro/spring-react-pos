@@ -2,7 +2,7 @@ package com.pos.service;
 
 import com.pos.common.enums.OrderStatus;
 import com.pos.common.enums.PaymentMethod;
-import com.pos.exception.BadRequestException;
+import com.pos.common.exception.BadRequestException;
 import com.pos.entity.OrderEntity;
 import com.pos.repository.OrderRepository;
 import com.pos.dto.request.CreatePaymentRequest;

@@ -8,7 +8,7 @@ import com.pos.dto.response.RefreshTokenResponse;
 import com.pos.entity.RefreshTokenEntity;
 import com.pos.common.enums.Role;
 import com.pos.entity.UserEntity;
-import com.pos.exception.UnauthorizedException;
+import com.pos.common.exception.UnauthorizedException;
 import com.pos.security.JwtTokenProvider;
 import com.pos.repository.RefreshTokenRepository;
 import com.pos.repository.UserRepository;

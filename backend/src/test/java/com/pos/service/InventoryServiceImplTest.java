@@ -7,7 +7,7 @@ import com.pos.dto.response.LowStockProductResponse;
 import com.pos.entity.InventoryAdjustmentEntity;
 import com.pos.common.enums.AdjustmentType;
 import com.pos.entity.ProductEntity;
-import com.pos.exception.BadRequestException;
+import com.pos.common.exception.BadRequestException;
 import com.pos.repository.InventoryAdjustmentRepository;
 import com.pos.repository.ProductRepository;
 import org.junit.jupiter.api.Test;

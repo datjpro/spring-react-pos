@@ -1,7 +1,7 @@
 package com.pos.security;
 
 import com.pos.entity.UserEntity;
-import com.pos.exception.UnauthorizedException;
+import com.pos.common.exception.UnauthorizedException;
 import com.pos.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
