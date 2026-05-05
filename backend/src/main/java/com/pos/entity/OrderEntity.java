@@ -3,6 +3,8 @@ package com.pos.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.pos.entity.base.BaseEntity;
+
 import com.pos.common.enums.OrderStatus;
 import com.pos.entity.UserEntity;
 import jakarta.persistence.CascadeType;

@@ -2,6 +2,8 @@ package com.pos.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import com.pos.entity.base.BaseEntity;
 import java.time.Instant;
 
 import com.pos.entity.UserEntity;

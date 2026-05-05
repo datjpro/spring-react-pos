@@ -3,6 +3,8 @@ package com.pos.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.pos.entity.base.BaseEntity;
+
 import com.pos.entity.ProductEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -3,6 +3,8 @@ package com.pos.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.pos.entity.base.BaseEntity;
+
 import com.pos.entity.BranchEntity;
 import com.pos.common.enums.Role;
 

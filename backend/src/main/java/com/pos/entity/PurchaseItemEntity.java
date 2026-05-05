@@ -3,6 +3,8 @@ package com.pos.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.pos.entity.base.IdEntity;
+
 import com.pos.entity.ProductEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
