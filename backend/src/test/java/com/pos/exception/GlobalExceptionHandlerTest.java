@@ -1,6 +1,6 @@
 package com.pos.exception;
 
-import com.pos.common.controller.TestValidationController;
+import com.pos.controller.TestValidationController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;

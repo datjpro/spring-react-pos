@@ -1,4 +1,4 @@
-package com.pos.dto.response;
+package com.pos.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
