@@ -35,6 +35,10 @@ public class SupplierServiceImpl implements SupplierService {
         return map(supplierRepository.save(e));
     }
 
+    public SupplierResponse findById(Long id) {
+        return map(find(id));
+    }
+
     public List<SupplierResponse> findAll() {
         return supplierRepository.findByActiveTrueOrderByNameAsc().stream().map(this::map).toList();
     }

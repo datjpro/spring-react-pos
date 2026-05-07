@@ -4,13 +4,15 @@ import com.pos.dtos.request.*;
 import com.pos.dtos.response.*;
 import com.pos.services.SaleService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-@RestController @RequestMapping("/api/v1/sales")
+@RestController @Validated @RequestMapping("/api/v1/sales")
 public class SaleController {
     private final SaleService saleService;
     public SaleController(SaleService saleService){this.saleService=saleService;}
@@ -18,4 +20,8 @@ public class SaleController {
     public ResponseEntity<SaleResponse> create(@Valid @RequestBody CreateSaleRequest request, Authentication authentication){return ResponseEntity.status(HttpStatus.CREATED).body(saleService.create(request, authentication));}
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')") @GetMapping
     public ResponseEntity<List<SaleResponse>> findAll(){return ResponseEntity.ok(saleService.findAll());}
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')") @GetMapping("/{id}")
+    public ResponseEntity<SaleResponse> findById(@PathVariable @Min(1) Long id, Authentication authentication){return ResponseEntity.ok(saleService.findById(id, authentication));}
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')") @PostMapping("/{id}/cancel")
+    public ResponseEntity<SaleResponse> cancel(@PathVariable @Min(1) Long id, @Valid @RequestBody(required = false) CancelSaleRequest request, Authentication authentication){return ResponseEntity.ok(saleService.cancel(id, request == null ? new CancelSaleRequest(null) : request, authentication));}
 }

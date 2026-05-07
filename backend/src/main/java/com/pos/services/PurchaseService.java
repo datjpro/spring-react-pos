@@ -8,5 +8,9 @@ import java.util.List;
 public interface PurchaseService {
     PurchaseResponse create(CreatePurchaseRequest request, Authentication authentication);
 
+    PurchaseResponse findById(Long id, Authentication authentication);
+
+    PurchaseResponse cancel(Long id, CancelPurchaseRequest request, Authentication authentication);
+
     List<PurchaseResponse> findAll();
 }

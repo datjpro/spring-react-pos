@@ -8,5 +8,9 @@ import java.util.List;
 public interface SaleService {
     SaleResponse create(CreateSaleRequest request, Authentication authentication);
 
+    SaleResponse findById(Long id, Authentication authentication);
+
+    SaleResponse cancel(Long id, CancelSaleRequest request, Authentication authentication);
+
     List<SaleResponse> findAll();
 }

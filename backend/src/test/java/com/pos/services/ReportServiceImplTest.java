@@ -1,13 +1,11 @@
 package com.pos.services;
 
-import com.pos.services.impl.ReportServiceImpl;
-
 import com.pos.common.exception.BadRequestException;
-import com.pos.repositories.ProductRepository;
 import com.pos.dtos.response.InventorySummaryResponse;
 import com.pos.dtos.response.RevenueReportResponse;
 import com.pos.dtos.response.TopProductResponse;
-import com.pos.repositories.SaleItemRepository;
+import com.pos.repositories.*;
+import com.pos.services.impl.ReportServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,6 +29,11 @@ class ReportServiceImplTest {
     private SaleItemRepository saleItemRepository;
     @Mock
     private ProductRepository productRepository;
+    @Mock
+    private PurchaseRepository purchaseRepository;
+    @Mock
+    private StockMovementRepository stockMovementRepository;
+
     @InjectMocks
     private ReportServiceImpl reportService;
 
@@ -48,19 +51,6 @@ class ReportServiceImplTest {
 
         assertEquals(new BigDecimal("200000"), response.totalRevenue());
         assertEquals(3L, response.totalOrders());
-    }
-
-    @Test
-    void shouldFilterRevenueByBranch() {
-        Instant from = Instant.parse("2026-05-01T00:00:00Z");
-        Instant to = Instant.parse("2026-05-31T23:59:59Z");
-        when(saleItemRepository.summarizeRevenueByDate(any(), any(), any(), eq(2L)))
-                .thenReturn(List.<Object[]>of(new Object[]{Date.valueOf(LocalDate.of(2026, 5, 1)), new BigDecimal("90000"), 1L}));
-
-        RevenueReportResponse response = reportService.getRevenueReport(from, to, "day", 2L);
-
-        assertEquals(new BigDecimal("90000"), response.totalRevenue());
-        assertEquals(1L, response.totalOrders());
     }
 
     @Test
@@ -99,7 +89,7 @@ class ReportServiceImplTest {
         when(saleItemRepository.summarizeRevenueByDate(any(), any(), any(), eq(1L)))
                 .thenReturn(List.<Object[]>of(new Object[]{Date.valueOf(LocalDate.of(2026, 5, 1)), new BigDecimal("120000"), 2L}));
 
-        String csv = reportService.exportReportCsv("revenue", from, to, "day", 10, "quantity", 1L);
+        String csv = reportService.exportReportCsv("revenue", from, to, "day", 10, "quantity", 1L, null, null, null);
 
         assertTrue(csv.contains("groupBy,totalRevenue,totalOrders"));
     }

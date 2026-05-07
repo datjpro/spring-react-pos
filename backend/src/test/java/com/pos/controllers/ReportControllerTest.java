@@ -72,7 +72,7 @@ class ReportControllerTest {
 
     @Test
     void shouldExportRevenueCsvSuccessfully() throws Exception {
-        when(reportService.exportReportCsv("revenue", Instant.parse("2026-05-01T00:00:00Z"), Instant.parse("2026-05-31T23:59:59Z"), "day", 10, "quantity", 3L))
+        when(reportService.exportReportCsv("revenue", Instant.parse("2026-05-01T00:00:00Z"), Instant.parse("2026-05-31T23:59:59Z"), "day", 10, "quantity", 3L, null, null, null))
                 .thenReturn("groupBy,totalRevenue,totalOrders\nday,100000,1\n");
         mockMvc.perform(get("/api/v1/reports/export").param("type", "revenue").param("format", "csv").param("from", "2026-05-01T00:00:00Z").param("to", "2026-05-31T23:59:59Z").param("groupBy", "day").param("limit", "10").param("sortBy", "quantity").param("branchId", "3"))
                 .andExpect(status().isOk())
