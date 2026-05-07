@@ -1,8 +1,6 @@
 package com.pos.controllers;
 
-import com.pos.dtos.response.InventorySummaryResponse;
-import com.pos.dtos.response.RevenueReportResponse;
-import com.pos.dtos.response.TopProductResponse;
+import com.pos.dtos.response.*;
 import com.pos.services.ReportService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -39,7 +37,7 @@ public class ReportController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
             @RequestParam(defaultValue = "day") String groupBy,
-            @RequestParam(required = false) @Min(value = 1, message = "branchId must be greater than 0") Long branchId) {
+            @RequestParam(required = false) @Min(1) Long branchId) {
         return ResponseEntity.ok(reportService.getRevenueReport(from, to, groupBy, branchId));
     }
 
@@ -47,15 +45,51 @@ public class ReportController {
     public ResponseEntity<List<TopProductResponse>> getTopProducts(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
-            @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit must be greater than or equal to 1") @Max(value = 100, message = "limit must be less than or equal to 100") int limit,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int limit,
             @RequestParam(defaultValue = "quantity") String sortBy,
-            @RequestParam(required = false) @Min(value = 1, message = "branchId must be greater than 0") Long branchId) {
+            @RequestParam(required = false) @Min(1) Long branchId) {
         return ResponseEntity.ok(reportService.getTopProducts(from, to, limit, sortBy, branchId));
     }
 
     @GetMapping("/inventory-summary")
     public ResponseEntity<InventorySummaryResponse> getInventorySummary() {
         return ResponseEntity.ok(reportService.getInventorySummary());
+    }
+
+    @GetMapping("/profit")
+    public ResponseEntity<ProfitReportResponse> getProfitReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+            @RequestParam(defaultValue = "day") String groupBy,
+            @RequestParam(required = false) @Min(1) Long branchId) {
+        return ResponseEntity.ok(reportService.getProfitReport(from, to, groupBy, branchId));
+    }
+
+    @GetMapping("/stock-card")
+    public ResponseEntity<StockCardReportResponse> getStockCard(
+            @RequestParam @Min(1) Long productId,
+            @RequestParam @Min(1) Long branchId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to) {
+        return ResponseEntity.ok(reportService.getStockCard(productId, branchId, from, to));
+    }
+
+    @GetMapping("/purchase-summary")
+    public ResponseEntity<PurchaseSummaryResponse> getPurchaseSummary(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+            @RequestParam(required = false) @Min(1) Long supplierId,
+            @RequestParam(required = false) @Min(1) Long branchId) {
+        return ResponseEntity.ok(reportService.getPurchaseSummary(from, to, supplierId, branchId));
+    }
+
+    @GetMapping("/sales-summary")
+    public ResponseEntity<SalesSummaryResponse> getSalesSummary(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+            @RequestParam(required = false) @Min(1) Long branchId,
+            @RequestParam(required = false) String createdBy) {
+        return ResponseEntity.ok(reportService.getSalesSummary(from, to, branchId, createdBy));
     }
 
     @GetMapping("/export")
@@ -65,14 +99,17 @@ public class ReportController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
             @RequestParam(defaultValue = "day") String groupBy,
-            @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit must be greater than or equal to 1") @Max(value = 100, message = "limit must be less than or equal to 100") int limit,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int limit,
             @RequestParam(defaultValue = "quantity") String sortBy,
-            @RequestParam(required = false) @Min(value = 1, message = "branchId must be greater than 0") Long branchId) {
+            @RequestParam(required = false) @Min(1) Long branchId,
+            @RequestParam(required = false) @Min(1) Long productId,
+            @RequestParam(required = false) @Min(1) Long supplierId,
+            @RequestParam(required = false) String createdBy) {
         if (!"csv".equalsIgnoreCase(format)) {
-            throw new com.pos.common.exception.BadRequestException("Phase 3 supports csv export only");
+            throw new com.pos.common.exception.BadRequestException("Only csv export is supported");
         }
 
-        String csvContent = reportService.exportReportCsv(type, from, to, groupBy, limit, sortBy, branchId);
+        String csvContent = reportService.exportReportCsv(type, from, to, groupBy, limit, sortBy, branchId, productId, supplierId, createdBy);
         String filename = "pos-" + type.toLowerCase() + "-" + LocalDate.now() + ".csv";
 
         return ResponseEntity.ok()
@@ -81,4 +118,3 @@ public class ReportController {
                 .body(csvContent);
     }
 }
-
