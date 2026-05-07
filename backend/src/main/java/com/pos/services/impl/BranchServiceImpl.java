@@ -35,6 +35,10 @@ public class BranchServiceImpl implements BranchService {
         return map(branchRepository.save(e));
     }
 
+    public BranchResponse findById(Long id) {
+        return map(find(id));
+    }
+
     public List<BranchResponse> findAll() {
         return branchRepository.findByActiveTrueOrderByNameAsc().stream().map(this::map).toList();
     }
