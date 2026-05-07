@@ -88,6 +88,42 @@ public class SaleServiceImpl implements SaleService {
         return saleRepository.findAll().stream().map(this::map).toList();
     }
 
+    public SaleResponse findById(Long id, Authentication authentication) {
+        UserEntity user = userContextService.requireUser(authentication);
+        SaleEntity sale = find(id);
+        branchAccessService.requireBranchAccess(user, sale.getBranch().getId());
+        return map(sale);
+    }
+
+    @Transactional
+    public SaleResponse cancel(Long id, CancelSaleRequest request, Authentication authentication) {
+        UserEntity user = userContextService.requireUser(authentication);
+        SaleEntity sale = find(id);
+        branchAccessService.requireBranchAccess(user, sale.getBranch().getId());
+
+        if (sale.getStatus() == SaleStatus.CANCELLED) {
+            throw new BadRequestException("Sale already cancelled");
+        }
+
+        for (SaleItemEntity item : sale.getItems()) {
+            ProductEntity product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
+            stockMovementService.record(product, sale.getBranch(), MovementType.IN, item.getQuantity(),
+                    "SALE_CANCEL", sale.getId(), request.reason(), user.getUsername());
+        }
+
+        sale.setStatus(SaleStatus.CANCELLED);
+        SaleEntity saved = saleRepository.save(sale);
+        auditLogService.log(user.getUsername(), "CANCEL_SALE", "SALE", saved.getId(), request.reason());
+        return map(saved);
+    }
+
+    private SaleEntity find(Long id) {
+        return saleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
+    }
+
     private SaleResponse map(SaleEntity entity) {
         return new SaleResponse(entity.getId(), entity.getSaleCode(), entity.getBranch().getId(),
                 entity.getBranch().getName(), entity.getStatus(), entity.getTotalAmount(),

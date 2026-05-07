@@ -93,6 +93,46 @@ public class PurchaseServiceImpl implements PurchaseService {
         return purchaseRepository.findAll().stream().map(this::map).toList();
     }
 
+    public PurchaseResponse findById(Long id, Authentication authentication) {
+        UserEntity user = userContextService.requireUser(authentication);
+        PurchaseEntity purchase = find(id);
+        branchAccessService.requireBranchAccess(user, purchase.getBranch().getId());
+        return map(purchase);
+    }
+
+    @Transactional
+    public PurchaseResponse cancel(Long id, CancelPurchaseRequest request, Authentication authentication) {
+        UserEntity user = userContextService.requireUser(authentication);
+        PurchaseEntity purchase = find(id);
+        branchAccessService.requireBranchAccess(user, purchase.getBranch().getId());
+
+        if (purchase.getStatus() == PurchaseStatus.CANCELLED) {
+            throw new BadRequestException("Purchase already cancelled");
+        }
+
+        for (PurchaseItemEntity item : purchase.getItems()) {
+            ProductEntity product = item.getProduct();
+            int newStock = product.getStock() - item.getQuantity();
+            if (newStock < 0) {
+                throw new BadRequestException("Insufficient stock to cancel purchase");
+            }
+            product.setStock(newStock);
+            productRepository.save(product);
+            stockMovementService.record(product, purchase.getBranch(), MovementType.OUT, item.getQuantity(),
+                    "PURCHASE_CANCEL", purchase.getId(), request.reason(), user.getUsername());
+        }
+
+        purchase.setStatus(PurchaseStatus.CANCELLED);
+        PurchaseEntity saved = purchaseRepository.save(purchase);
+        auditLogService.log(user.getUsername(), "CANCEL_PURCHASE", "PURCHASE", saved.getId(), request.reason());
+        return map(saved);
+    }
+
+    private PurchaseEntity find(Long id) {
+        return purchaseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Purchase not found"));
+    }
+
     private PurchaseResponse map(PurchaseEntity entity) {
         return new PurchaseResponse(entity.getId(), entity.getPurchaseCode(), entity.getSupplier().getId(),
                 entity.getSupplier().getName(), entity.getBranch().getId(), entity.getBranch().getName(),
