@@ -2,10 +2,12 @@
 
 Tài liệu mô tả các endpoint REST hiện có trong backend.
 
-- Base URL local: `http://localhost:8081`
+- Base URL local: `http://localhost:8080`
 - Prefix API: `/api/v1`
 - Auth: phần lớn endpoint cần header `Authorization: Bearer <accessToken>`.
 - Quyền: backend dùng `ADMIN`, `MANAGER`, `STAFF` qua Spring Security.
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
 ## 1. Xác thực
 
@@ -16,7 +18,7 @@ Request body:
 ```json
 {
   "username": "admin",
-  "password": "123456"
+  "password": "postgres"
 }
 ```
 

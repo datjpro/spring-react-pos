@@ -6,6 +6,8 @@ import com.pos.dtos.response.InventoryAdjustmentResponse;
 import com.pos.dtos.response.LowStockProductResponse;
 import com.pos.common.enums.AdjustmentType;
 import com.pos.services.InventoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -28,6 +30,7 @@ import java.util.List;
 @RestController
 @Validated
 @RequestMapping("/api/v1/inventory")
+@Tag(name = "Inventory", description = "Legacy inventory adjustment and low-stock endpoints")
 public class InventoryController {
 
     private final InventoryService inventoryService;
@@ -38,6 +41,7 @@ public class InventoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @PostMapping("/adjustments")
+    @Operation(summary = "Create inventory adjustment", description = "Create legacy inventory adjustment record")
     public ResponseEntity<InventoryAdjustmentResponse> adjustInventory(@Valid @RequestBody InventoryAdjustmentRequest inventoryAdjustmentRequest,
                                                                        Authentication authentication) {
         InventoryAdjustmentResponse inventoryAdjustmentResponse = inventoryService.adjustInventory(inventoryAdjustmentRequest, authentication.getName());
@@ -45,6 +49,7 @@ public class InventoryController {
     }
 
     @GetMapping("/adjustments")
+    @Operation(summary = "List inventory adjustments", description = "Get paginated inventory adjustments")
     public ResponseEntity<InventoryAdjustmentPageResponse> findAdjustments(
             @RequestParam(defaultValue = "0") @Min(value = 0, message = "page must be greater than or equal to 0") int page,
             @RequestParam(defaultValue = "20") @Min(value = 1, message = "size must be greater than or equal to 1") @Max(value = 100, message = "size must be less than or equal to 100") int size,
@@ -57,6 +62,7 @@ public class InventoryController {
     }
 
     @GetMapping("/low-stock")
+    @Operation(summary = "List low stock products", description = "Get products below stock threshold")
     public ResponseEntity<List<LowStockProductResponse>> findLowStockProducts(@RequestParam(defaultValue = "10") @Min(value = 0, message = "threshold must be greater than or equal to 0") int threshold) {
         return ResponseEntity.ok(inventoryService.findLowStockProducts(threshold));
     }
