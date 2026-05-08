@@ -160,9 +160,9 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?m m?i token th?nh c?ng', function () { pm.response.to.have.status(200); });",
+                  "pm.test('LÃ m má»i token thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });",
                   "const data = pm.response.json();",
-                  "pm.test('C? accessToken m?i', function () { pm.expect(data.accessToken).to.be.a('string').and.not.empty; });",
+                  "pm.test('Có accessToken mới', function () { pm.expect(data.accessToken).to.be.a('string').and.not.empty; });",
                   "pm.collectionVariables.set('accessToken', data.accessToken);"
                 ]
               }
@@ -205,7 +205,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('??ng xu?t th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('ÄÄng xuáº¥t thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -337,7 +337,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y danh s?ch s?n ph?m th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y danh sÃ¡ch sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -379,7 +379,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y chi ti?t s?n ph?m th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y chi tiáº¿t sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -436,7 +436,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('C?p nh?t s?n ph?m th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Cáº­p nháº­t sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -478,7 +478,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y danh m?c s?n ph?m th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y danh má»¥c sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -540,7 +540,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('T?o chi nh?nh th?nh c?ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Táº¡o chi nhÃ¡nh thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('branchId', data.id);"
                 ]
@@ -583,14 +583,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y danh s?ch chi nh?nh th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y danh sÃ¡ch chi nhÃ¡nh thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "L?y chi ti?t chi nh?nh",
+          "name": "Láº¥y chi tiáº¿t chi nhÃ¡nh",
           "request": {
             "method": "GET",
             "header": [],
@@ -616,7 +616,7 @@
                 "{{branchId}}"
               ]
             },
-            "description": "L?y chi ti?t chi nh?nh theo branchId ?? l?u t? request t?o chi nh?nh. K?t qu? mong ??i: 200, tr? ??ng th?ng tin chi nh?nh."
+            "description": "Lấy chi tiết chi nhánh theo branchId đã lưu từ request tạo chi nhánh. Kết quả mong đợi: 200, trả đúng thông tin chi nhánh."
           },
           "event": [
             {
@@ -624,7 +624,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y chi ti?t chi nh?nh th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y chi tiáº¿t chi nhÃ¡nh thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -682,7 +682,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('C?p nh?t chi nh?nh th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Cáº­p nháº­t chi nhÃ¡nh thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -744,7 +744,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('T?o nh? cung c?p th?nh c?ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Táº¡o nhÃ  cung cáº¥p thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('supplierId', data.id);"
                 ]
@@ -787,14 +787,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y danh s?ch nh? cung c?p th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y danh sÃ¡ch nhÃ  cung cáº¥p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "L?y chi ti?t nh? cung c?p",
+          "name": "Láº¥y chi tiáº¿t nhÃ  cung cáº¥p",
           "request": {
             "method": "GET",
             "header": [],
@@ -820,7 +820,7 @@
                 "{{supplierId}}"
               ]
             },
-            "description": "L?y chi ti?t nh? cung c?p theo supplierId ?? l?u t? request t?o nh? cung c?p. K?t qu? mong ??i: 200, tr? ??ng th?ng tin nh? cung c?p."
+            "description": "Lấy chi tiết nhà cung cấp theo supplierId đã lưu từ request tạo nhà cung cấp. Kết quả mong đợi: 200, trả đúng thông tin nhà cung cấp."
           },
           "event": [
             {
@@ -828,7 +828,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y chi ti?t nh? cung c?p th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y chi tiáº¿t nhÃ  cung cáº¥p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -886,7 +886,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('C?p nh?t nh? cung c?p th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Cáº­p nháº­t nhÃ  cung cáº¥p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -948,7 +948,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('T?o phi?u nh?p th?nh c?ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Táº¡o phiáº¿u nháº­p thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('purchaseId', data.id);"
                 ]
@@ -991,14 +991,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y danh s?ch phi?u nh?p th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y danh sÃ¡ch phiáº¿u nháº­p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "L?y chi ti?t phi?u nh?p",
+          "name": "Láº¥y chi tiáº¿t phiáº¿u nháº­p",
           "request": {
             "method": "GET",
             "header": [],
@@ -1024,7 +1024,7 @@
                 "{{purchaseId}}"
               ]
             },
-            "description": "L?y chi ti?t phi?u nh?p theo purchaseId ?? l?u t? request t?o phi?u nh?p. K?t qu? mong ??i: 200."
+            "description": "Lấy chi tiết phiếu nhập theo purchaseId đã lưu từ request tạo phiếu nhập. Kết quả mong đợi: 200."
           },
           "event": [
             {
@@ -1032,7 +1032,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y chi ti?t phi?u nh?p th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y chi tiáº¿t phiáº¿u nháº­p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1040,7 +1040,7 @@
           "response": []
         },
         {
-          "name": "H?y phi?u nh?p",
+          "name": "Há»§y phiáº¿u nháº­p",
           "request": {
             "method": "POST",
             "header": [
@@ -1073,10 +1073,10 @@
                 "cancel"
               ]
             },
-            "description": "H?y phi?u nh?p v? ho?n t?c t?n kho ?? c?ng tr??c ??. K?t qu? mong ??i: 200, status chuy?n CANCELLED.",
+            "description": "Hủy phiếu nhập và hoàn tác tồn kho đã cộng trước đó. Kết quả mong đợi: 200, status chuyển CANCELLED.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reason\": \"Nh?p sai phi?u\"\n}\n",
+              "raw": "{\n  \"reason\": \"Nháº­p sai phiếu\"\n}\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1090,9 +1090,9 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('H?y phi?u nh?p th?nh c?ng', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Há»§y phiáº¿u nháº­p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });",
                   "const data = pm.response.json();",
-                  "pm.test('Tr?ng th?i ?? h?y', function () { pm.expect(data.status).to.eql('CANCELLED'); });"
+                  "pm.test('Trạng thái đã hủy', function () { pm.expect(data.status).to.eql('CANCELLED'); });"
                 ]
               }
             }
@@ -1155,7 +1155,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('T?o h?a ??n b?n th?nh c?ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Táº¡o hÃ³a ÄÆ¡n bÃ¡n thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('saleId', data.id);"
                 ]
@@ -1198,14 +1198,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y danh s?ch h?a ??n b?n th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y danh sÃ¡ch hÃ³a ÄÆ¡n bÃ¡n thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "L?y chi ti?t h?a ??n b?n",
+          "name": "Láº¥y chi tiáº¿t hÃ³a ÄÆ¡n bÃ¡n",
           "request": {
             "method": "GET",
             "header": [],
@@ -1231,7 +1231,7 @@
                 "{{saleId}}"
               ]
             },
-            "description": "L?y chi ti?t h?a ??n b?n theo saleId ?? l?u t? request t?o h?a ??n. K?t qu? mong ??i: 200."
+            "description": "Lấy chi tiết hóa đơn bán theo saleId đã lưu từ request tạo hóa đơn. Kết quả mong đợi: 200."
           },
           "event": [
             {
@@ -1239,7 +1239,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y chi ti?t h?a ??n b?n th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y chi tiáº¿t hÃ³a ÄÆ¡n bÃ¡n thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1247,7 +1247,7 @@
           "response": []
         },
         {
-          "name": "H?y h?a ??n b?n",
+          "name": "Há»§y hÃ³a ÄÆ¡n bÃ¡n",
           "request": {
             "method": "POST",
             "header": [
@@ -1280,10 +1280,10 @@
                 "cancel"
               ]
             },
-            "description": "H?y h?a ??n b?n v? ho?n t?c s? l??ng ?? tr? kh?i t?n kho. K?t qu? mong ??i: 200, tr?ng th?i CANCELLED.",
+            "description": "Hủy hóa đơn bán và hoàn tác số lượng đã trừ khỏi tồn kho. Kết quả mong đợi: 200, trạng thái CANCELLED.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reason\": \"H?y h?a ??n nh?p sai\"\n}\n",
+              "raw": "{\n  \"reason\": \"Há»§y hóa đơn nhập sai\"\n}\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1297,9 +1297,9 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('H?y h?a ??n b?n th?nh c?ng', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Há»§y hÃ³a ÄÆ¡n bÃ¡n thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });",
                   "const data = pm.response.json();",
-                  "pm.test('Tr?ng th?i ?? h?y', function () { pm.expect(data.status).to.eql('CANCELLED'); });"
+                  "pm.test('Trạng thái đã hủy', function () { pm.expect(data.status).to.eql('CANCELLED'); });"
                 ]
               }
             }
@@ -1357,7 +1357,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y stock movement th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y stock movement thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1414,7 +1414,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('?i?u ch?nh stock movement th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Äiá»u chá»nh stock movement thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1471,7 +1471,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y audit log th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y audit log thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1537,7 +1537,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y b?o c?o doanh thu th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y bÃ¡o cÃ¡o doanh thu thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1601,7 +1601,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y top s?n ph?m th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y top sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1643,7 +1643,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y t?ng quan t?n kho th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y tá»ng quan tá»n kho thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1711,14 +1711,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Xu?t b?o c?o CSV th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Xuáº¥t bÃ¡o cÃ¡o CSV thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "B?o c?o l?i nhu?n",
+          "name": "BÃ¡o cÃ¡o lá»£i nhuáº­n",
           "request": {
             "method": "GET",
             "header": [],
@@ -1762,7 +1762,7 @@
                 }
               ]
             },
-            "description": "B?o c?o l?i nhu?n theo th?i gian."
+            "description": "Báo cáo lợi nhuận theo thời gian."
           },
           "event": [
             {
@@ -1770,7 +1770,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('B?o c?o l?i nhu?n th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('BÃ¡o cÃ¡o lá»£i nhuáº­n thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1778,7 +1778,7 @@
           "response": []
         },
         {
-          "name": "B?o c?o th? kho",
+          "name": "BÃ¡o cÃ¡o tháº» kho",
           "request": {
             "method": "GET",
             "header": [],
@@ -1822,7 +1822,7 @@
                 }
               ]
             },
-            "description": "B?o c?o bi?n ??ng t?n kho theo s?n ph?m v? chi nh?nh."
+            "description": "BÃ¡o cÃ¡o biáº¿n Äá»ng tá»n kho theo sáº£n pháº©m vÃ  chi nhÃ¡nh."
           },
           "event": [
             {
@@ -1830,7 +1830,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('B?o c?o th? kho th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('BÃ¡o cÃ¡o tháº» kho thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1838,7 +1838,7 @@
           "response": []
         },
         {
-          "name": "B?o c?o t?ng h?p nh?p h?ng",
+          "name": "BÃ¡o cÃ¡o tá»ng há»£p nháº­p hÃ ng",
           "request": {
             "method": "GET",
             "header": [],
@@ -1882,7 +1882,7 @@
                 }
               ]
             },
-            "description": "B?o c?o t?ng h?p nh?p h?ng theo b? l?c."
+            "description": "Báo cáo tổng hợp nhập hàng theo bộ lọc."
           },
           "event": [
             {
@@ -1890,7 +1890,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('B?o c?o t?ng h?p nh?p h?ng th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('BÃ¡o cÃ¡o tá»ng há»£p nháº­p hÃ ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1898,7 +1898,7 @@
           "response": []
         },
         {
-          "name": "B?o c?o t?ng h?p b?n h?ng",
+          "name": "BÃ¡o cÃ¡o tá»ng há»£p bÃ¡n hÃ ng",
           "request": {
             "method": "GET",
             "header": [],
@@ -1942,7 +1942,7 @@
                 }
               ]
             },
-            "description": "B?o c?o t?ng h?p b?n h?ng theo b? l?c."
+            "description": "Báo cáo tổng hợp bán hàng theo bộ lọc."
           },
           "event": [
             {
@@ -1950,7 +1950,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('B?o c?o t?ng h?p b?n h?ng th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('BÃ¡o cÃ¡o tá»ng há»£p bÃ¡n hÃ ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2013,7 +2013,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('T?o order legacy th?nh c?ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Táº¡o order legacy thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('orderId', data.id);",
                   "pm.collectionVariables.set('orderTotalAmount', data.totalAmount);"
@@ -2067,7 +2067,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y danh s?ch order th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y danh sÃ¡ch order thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2109,7 +2109,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y chi ti?t order th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y chi tiáº¿t order thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2165,7 +2165,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('T?o thanh to?n legacy th?nh c?ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Tạo thanh toán legacy thành công', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('paymentId', data.id);"
                 ]
@@ -2209,7 +2209,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y chi ti?t payment th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y chi tiáº¿t payment thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2256,7 +2256,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y payment theo order th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y payment theo order thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2313,7 +2313,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('?i?u ch?nh kho legacy th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Äiá»u chá»nh kho legacy thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2369,7 +2369,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y l?ch s? inventory adjustment th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y lá»ch sá»­ inventory adjustment thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2417,7 +2417,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y low stock th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y low stock thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2475,7 +2475,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('H?y order th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Há»§y order thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2484,11 +2484,11 @@
       ]
     },
     {
-      "name": "10 - Qu?n tr? ng??i d?ng",
-      "description": "Qu?n tr? ng??i d?ng: danh s?ch, h? s? hi?n t?i, t?o, c?p nh?t, kh?a/m?.",
+      "name": "10 - Quáº£n trá» ngÆ°á»i dÃ¹ng",
+      "description": "Quản trị người dùng: danh sách, hồ sơ hiện tại, tạo, cập nhật, khóa/mở.",
       "item": [
         {
-          "name": "L?y danh s?ch ng??i d?ng",
+          "name": "Láº¥y danh sÃ¡ch ngÆ°á»i dÃ¹ng",
           "request": {
             "method": "GET",
             "header": [],
@@ -2513,7 +2513,7 @@
                 "users"
               ]
             },
-            "description": "Quy?n ADMIN. L?y danh s?ch t?i kho?n."
+            "description": "Quyá»n ADMIN. Láº¥y danh sÃ¡ch tÃ i khoáº£n."
           },
           "event": [
             {
@@ -2521,7 +2521,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y danh s?ch ng??i d?ng th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y danh sÃ¡ch ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2529,7 +2529,7 @@
           "response": []
         },
         {
-          "name": "L?y h? s? ng??i d?ng hi?n t?i",
+          "name": "Láº¥y há» sÆ¡ ngÆ°á»i dÃ¹ng hiá»n táº¡i",
           "request": {
             "method": "GET",
             "header": [],
@@ -2555,7 +2555,7 @@
                 "me"
               ]
             },
-            "description": "L?y th?ng tin t?i kho?n ?ang ??ng nh?p."
+            "description": "Lấy thông tin tài khoản đang đăng nhập."
           },
           "event": [
             {
@@ -2563,7 +2563,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('L?y h? s? hi?n t?i th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Láº¥y há» sÆ¡ hiá»n táº¡i thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2571,7 +2571,7 @@
           "response": []
         },
         {
-          "name": "T?o ng??i d?ng",
+          "name": "Táº¡o ngÆ°á»i dÃ¹ng",
           "request": {
             "method": "POST",
             "header": [
@@ -2602,7 +2602,7 @@
                 "users"
               ]
             },
-            "description": "Quy?n ADMIN. T?o t?i kho?n m?i.",
+            "description": "Quyá»n ADMIN. Táº¡o tÃ i khoáº£n má»i.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"staff01\",\n  \"password\": \"123456\",\n  \"role\": \"STAFF\",\n  \"branchId\": {{branchId}},\n  \"active\": true\n}\n",
@@ -2619,7 +2619,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('T?o ng??i d?ng th?nh c?ng', function () { pm.response.to.have.status(201); });"
+                  "pm.test('Táº¡o ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });"
                 ]
               }
             }
@@ -2627,7 +2627,7 @@
           "response": []
         },
         {
-          "name": "C?p nh?t ng??i d?ng",
+          "name": "Cáº­p nháº­t ngÆ°á»i dÃ¹ng",
           "request": {
             "method": "PUT",
             "header": [
@@ -2648,7 +2648,7 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/users/1",
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -2659,7 +2659,7 @@
                 "1"
               ]
             },
-            "description": "Quy?n ADMIN. C?p nh?t role/branch/active.",
+            "description": "Quyá»n ADMIN. Cáº­p nháº­t role/branch/active.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"role\": \"MANAGER\",\n  \"branchId\": {{branchId}},\n  \"active\": true\n}\n",
@@ -2676,7 +2676,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('C?p nh?t ng??i d?ng th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Cáº­p nháº­t ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2684,7 +2684,7 @@
           "response": []
         },
         {
-          "name": "Kh?a/M? ng??i d?ng",
+          "name": "Khóa/Mở người dùng",
           "request": {
             "method": "PATCH",
             "header": [
@@ -2705,7 +2705,7 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/users/1/active",
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}/active",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -2717,7 +2717,7 @@
                 "active"
               ]
             },
-            "description": "Quy?n ADMIN. Kh?a ho?c m? tr?ng th?i t?i kho?n.",
+            "description": "Quyền ADMIN. Khóa hoặc mở trạng thái tài khoản.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"active\": false\n}\n",
@@ -2734,7 +2734,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('C?p nh?t tr?ng th?i ng??i d?ng th?nh c?ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Cập nhật trạng thái người dùng thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }

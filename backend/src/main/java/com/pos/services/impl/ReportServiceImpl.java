@@ -94,7 +94,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public InventorySummaryResponse getInventorySummary() {
-        Object[] totals = productRepository.summarizeInventoryTotals();
+        Object[] totals = firstRow(productRepository.summarizeInventoryTotals());
         return new InventorySummaryResponse(
                 toLong(totals[0]),
                 productRepository.countByActiveTrue(),
@@ -143,14 +143,14 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public PurchaseSummaryResponse getPurchaseSummary(Instant from, Instant to, Long supplierId, Long branchId) {
         validateDateRange(from, to);
-        Object[] row = purchaseRepository.summarizePurchases(from, to, supplierId, branchId);
+        Object[] row = firstRow(purchaseRepository.summarizePurchases(from, to, supplierId, branchId));
         return new PurchaseSummaryResponse(from, to, supplierId, branchId, toLong(row[0]), toLong(row[1]), toBigDecimal(row[2]));
     }
 
     @Override
     public SalesSummaryResponse getSalesSummary(Instant from, Instant to, Long branchId, String createdBy) {
         validateDateRange(from, to);
-        Object[] row = saleItemRepository.summarizeSales(COMPLETED, from, to, branchId, createdBy);
+        Object[] row = firstRow(saleItemRepository.summarizeSales(COMPLETED, from, to, branchId, createdBy));
         return new SalesSummaryResponse(from, to, branchId, createdBy, toLong(row[0]), toLong(row[1]), toBigDecimal(row[2]));
     }
 
@@ -296,6 +296,12 @@ public class ReportServiceImpl implements ReportService {
 
     private TopProductResponse mapTopProduct(Object[] row) {
         return new TopProductResponse(toLong(row[0]), (String) row[1], (String) row[2], toLong(row[3]), toBigDecimal(row[4]));
+    }
+
+    private Object[] firstRow(Object[] row) {
+        if (row == null || row.length == 0) return new Object[0];
+        if (row.length == 1 && row[0] instanceof Object[] nestedRow) return nestedRow;
+        return row;
     }
 
     private LocalDate toLocalDate(Object value) {

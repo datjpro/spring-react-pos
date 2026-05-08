@@ -54,7 +54,7 @@ class ProductControllerTest {
     @Test
     void shouldFindProductsSuccessfully() throws Exception {
         ProductResponse productResponse = new ProductResponse(
-                1L, "SP-001", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"), 10,
+                1L, "OW-SM-BLU-L", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"), 10,
                 "pack", "123", "desc", "https://img", true, Instant.now()
         );
         ProductPageResponse productPageResponse = new ProductPageResponse(List.of(productResponse), 1, 1, 0, 20);
@@ -69,11 +69,11 @@ class ProductControllerTest {
     @Test
     void shouldCreateProductSuccessfully() throws Exception {
         CreateProductRequest createProductRequest = new CreateProductRequest(
-                "SP-001", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"),
+                "OW-SM-BLU-L", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"),
                 50, "pack", "123456", "desc", "https://img"
         );
         ProductResponse productResponse = new ProductResponse(
-                1L, "SP-001", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"), 50,
+                1L, "OW-SM-BLU-L", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"), 50,
                 "pack", "123456", "desc", "https://img", true, Instant.now()
         );
 
@@ -83,13 +83,27 @@ class ProductControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createProductRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.sku").value("SP-001"));
+                .andExpect(jsonPath("$.sku").value("OW-SM-BLU-L"));
+    }
+
+    @Test
+    void shouldRejectCreateProductWhenSkuInvalidFormat() throws Exception {
+        CreateProductRequest createProductRequest = new CreateProductRequest(
+                "sku_demo_001", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"),
+                50, "pack", "123456", "desc", "https://img"
+        );
+
+        mockMvc.perform(post("/api/v1/products")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createProductRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"));
     }
 
     @Test
     void shouldFindProductByIdSuccessfully() throws Exception {
         ProductResponse productResponse = new ProductResponse(
-                1L, "SP-001", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"), 50,
+                1L, "OW-SM-BLU-L", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"), 50,
                 "pack", "123456", "desc", "https://img", true, Instant.now()
         );
         when(productService.findProductById(1L)).thenReturn(productResponse);
@@ -106,7 +120,7 @@ class ProductControllerTest {
                 55, "pack", "123456", "desc", "https://img", true
         );
         ProductResponse productResponse = new ProductResponse(
-                1L, "SP-001", "Coffee Updated", "Drink", new BigDecimal("110000"), new BigDecimal("85000"), 55,
+                1L, "OW-SM-BLU-L", "Coffee Updated", "Drink", new BigDecimal("110000"), new BigDecimal("85000"), 55,
                 "pack", "123456", "desc", "https://img", true, Instant.now()
         );
         when(productService.updateProduct(any(Long.class), any(UpdateProductRequest.class))).thenReturn(productResponse);

@@ -1,4 +1,4 @@
-package com.pos.services;
+﻿package com.pos.services;
 
 import com.pos.services.impl.ProductServiceImpl;
 
@@ -44,13 +44,13 @@ class ProductServiceImplTest {
     @Test
     void shouldCreateProductSuccessfully() {
         CreateProductRequest createProductRequest = new CreateProductRequest(
-                "SP-001", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"),
+                "OW-SM-BLU-L", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"),
                 50, "pack", "123456", "desc", "https://img"
         );
 
         ProductEntity productEntity = new ProductEntity();
         productEntity.setId(1L);
-        productEntity.setSku("SP-001");
+        productEntity.setSku("OW-SM-BLU-L");
         productEntity.setName("Coffee");
         productEntity.setCategory("Drink");
         productEntity.setPrice(new BigDecimal("100000"));
@@ -59,21 +59,21 @@ class ProductServiceImplTest {
         productEntity.setUnit("pack");
         productEntity.setActive(true);
 
-        when(productRepository.existsBySkuIgnoreCase("SP-001")).thenReturn(false);
+        when(productRepository.existsBySkuIgnoreCase("OW-SM-BLU-L")).thenReturn(false);
         when(productRepository.save(any(ProductEntity.class))).thenReturn(productEntity);
 
         ProductResponse productResponse = productService.createProduct(createProductRequest);
-        assertEquals("SP-001", productResponse.sku());
+        assertEquals("OW-SM-BLU-L", productResponse.sku());
         assertEquals("Coffee", productResponse.name());
     }
 
     @Test
     void shouldThrowDuplicateResourceWhenSkuExists() {
         CreateProductRequest createProductRequest = new CreateProductRequest(
-                "SP-001", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"),
+                "OW-SM-BLU-L", "Coffee", "Drink", new BigDecimal("100000"), new BigDecimal("80000"),
                 50, "pack", "123456", "desc", "https://img"
         );
-        when(productRepository.existsBySkuIgnoreCase("SP-001")).thenReturn(true);
+        when(productRepository.existsBySkuIgnoreCase("OW-SM-BLU-L")).thenReturn(true);
 
         assertThrows(DuplicateResourceException.class, () -> productService.createProduct(createProductRequest));
     }
@@ -82,14 +82,14 @@ class ProductServiceImplTest {
     void shouldFindProductByIdSuccessfully() {
         ProductEntity productEntity = new ProductEntity();
         productEntity.setId(1L);
-        productEntity.setSku("SP-001");
+        productEntity.setSku("OW-SM-BLU-L");
         productEntity.setName("Coffee");
         productEntity.setActive(true);
 
         when(productRepository.findByIdAndActiveTrue(1L)).thenReturn(Optional.of(productEntity));
 
         ProductResponse productResponse = productService.findProductById(1L);
-        assertEquals("SP-001", productResponse.sku());
+        assertEquals("OW-SM-BLU-L", productResponse.sku());
     }
 
     @Test
@@ -116,7 +116,7 @@ class ProductServiceImplTest {
     void shouldFindProductsWithPagingSuccessfully() {
         ProductEntity productEntity = new ProductEntity();
         productEntity.setId(1L);
-        productEntity.setSku("SP-001");
+        productEntity.setSku("OW-SM-BLU-L");
         productEntity.setName("Coffee");
         productEntity.setActive(true);
 
@@ -133,7 +133,7 @@ class ProductServiceImplTest {
     void shouldUpdateProductSuccessfully() {
         ProductEntity productEntity = new ProductEntity();
         productEntity.setId(1L);
-        productEntity.setSku("SP-001");
+        productEntity.setSku("OW-SM-BLU-L");
         productEntity.setName("Old Name");
         productEntity.setActive(true);
 

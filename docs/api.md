@@ -66,7 +66,7 @@ Quyền: `ADMIN`, `MANAGER`.
 Request body:
 ```json
 {
-  "sku": "SP-001",
+  "sku": "OW-SM-BLU-L",
   "name": "Cà phê sữa",
   "category": "Đồ uống",
   "price": 25000,
@@ -78,6 +78,14 @@ Request body:
   "imageUrl": "https://example.com/product.jpg"
 }
 ```
+
+Quy ước SKU:
+- Format chung: các cụm nghiệp vụ viết hoa, ngăn cách bằng dấu `-`.
+- Regex: `^[A-Z0-9]{2,6}(-[A-Z0-9]{1,8}){2,7}$`
+- Mỗi ngành tự định nghĩa ý nghĩa cụm theo nhu cầu quản lý.
+- Ví dụ thời trang: `OW-SM-BLU-L` = Owen, sơ mi, xanh, size L.
+- Ví dụ đồ uống: `CF-LAT-HOT-M` = Coffee, latte, nóng, size M.
+- Ví dụ điện tử: `SS-TV-LED-55` = Samsung, TV, LED, 55 inch.
 
 ### `GET /api/v1/products/{id}`
 Lấy chi tiết sản phẩm theo ID.

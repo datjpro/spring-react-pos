@@ -2,6 +2,7 @@ package com.pos.dtos.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
@@ -10,6 +11,10 @@ import java.math.BigDecimal;
 public record CreateProductRequest(
         @NotBlank(message = "sku must not be blank")
         @Size(max = 50, message = "sku must be at most 50 characters")
+        @Pattern(
+                regexp = "^[A-Z0-9]{2,6}(-[A-Z0-9]{1,8}){2,7}$",
+                message = "sku must use uppercase business segments separated by hyphens"
+        )
         String sku,
 
         @NotBlank(message = "name must not be blank")

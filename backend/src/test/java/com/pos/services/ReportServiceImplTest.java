@@ -2,7 +2,9 @@ package com.pos.services;
 
 import com.pos.common.exception.BadRequestException;
 import com.pos.dtos.response.InventorySummaryResponse;
+import com.pos.dtos.response.PurchaseSummaryResponse;
 import com.pos.dtos.response.RevenueReportResponse;
+import com.pos.dtos.response.SalesSummaryResponse;
 import com.pos.dtos.response.TopProductResponse;
 import com.pos.repositories.*;
 import com.pos.services.impl.ReportServiceImpl;
@@ -80,6 +82,75 @@ class ReportServiceImplTest {
 
         assertEquals(3L, response.totalProducts());
         assertEquals(18L, response.totalStock());
+    }
+
+    @Test
+    void shouldReturnInventorySummaryWhenRepositoryWrapsAggregateRow() {
+        when(productRepository.summarizeInventoryTotals()).thenReturn(new Object[]{new Object[]{3L, 18L}});
+        when(productRepository.countByActiveTrue()).thenReturn(2L);
+        when(productRepository.countByActiveTrueAndStockLessThanEqual(10)).thenReturn(1L);
+        when(productRepository.countByActiveTrueAndStock(0)).thenReturn(1L);
+
+        InventorySummaryResponse response = reportService.getInventorySummary();
+
+        assertEquals(3L, response.totalProducts());
+        assertEquals(18L, response.totalStock());
+    }
+
+    @Test
+    void shouldReturnPurchaseSummaryWhenRepositoryWrapsAggregateRow() {
+        Instant from = Instant.parse("2026-05-01T00:00:00Z");
+        Instant to = Instant.parse("2026-05-31T23:59:59Z");
+        when(purchaseRepository.summarizePurchases(from, to, 1L, 2L))
+                .thenReturn(new Object[]{new Object[]{4L, 25L, new BigDecimal("300000")}});
+
+        PurchaseSummaryResponse response = reportService.getPurchaseSummary(from, to, 1L, 2L);
+
+        assertEquals(4L, response.totalPurchases());
+        assertEquals(25L, response.totalQuantity());
+        assertEquals(new BigDecimal("300000"), response.totalAmount());
+    }
+
+    @Test
+    void shouldReturnPurchaseSummaryFromFlatAggregateRow() {
+        Instant from = Instant.parse("2026-05-01T00:00:00Z");
+        Instant to = Instant.parse("2026-05-31T23:59:59Z");
+        when(purchaseRepository.summarizePurchases(from, to, 1L, 2L))
+                .thenReturn(new Object[]{4L, 25L, new BigDecimal("300000")});
+
+        PurchaseSummaryResponse response = reportService.getPurchaseSummary(from, to, 1L, 2L);
+
+        assertEquals(4L, response.totalPurchases());
+        assertEquals(25L, response.totalQuantity());
+        assertEquals(new BigDecimal("300000"), response.totalAmount());
+    }
+
+    @Test
+    void shouldReturnSalesSummaryWhenRepositoryWrapsAggregateRow() {
+        Instant from = Instant.parse("2026-05-01T00:00:00Z");
+        Instant to = Instant.parse("2026-05-31T23:59:59Z");
+        when(saleItemRepository.summarizeSales(any(), eq(from), eq(to), eq(2L), eq("admin")))
+                .thenReturn(new Object[]{new Object[]{5L, 12L, new BigDecimal("450000")}});
+
+        SalesSummaryResponse response = reportService.getSalesSummary(from, to, 2L, "admin");
+
+        assertEquals(5L, response.totalSales());
+        assertEquals(12L, response.totalQuantity());
+        assertEquals(new BigDecimal("450000"), response.totalAmount());
+    }
+
+    @Test
+    void shouldReturnSalesSummaryFromFlatAggregateRow() {
+        Instant from = Instant.parse("2026-05-01T00:00:00Z");
+        Instant to = Instant.parse("2026-05-31T23:59:59Z");
+        when(saleItemRepository.summarizeSales(any(), eq(from), eq(to), eq(2L), eq("admin")))
+                .thenReturn(new Object[]{5L, 12L, new BigDecimal("450000")});
+
+        SalesSummaryResponse response = reportService.getSalesSummary(from, to, 2L, "admin");
+
+        assertEquals(5L, response.totalSales());
+        assertEquals(12L, response.totalQuantity());
+        assertEquals(new BigDecimal("450000"), response.totalAmount());
     }
 
     @Test
