@@ -300,7 +300,9 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
-
+.vscode/
+docs/test-reports/*
+!docs/test-reports/README.md
 # Visual Studio 6 build log
 *.plg
 
