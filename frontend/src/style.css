@@ -174,12 +174,18 @@ button {
 }
 
 .auth-form input,
-.toolbar input {
+.toolbar input,
+.json-form textarea {
   width: 100%;
   padding: 12px 14px;
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 12px;
   background: rgba(15, 23, 42, 0.8);
+}
+
+.json-form textarea {
+  min-height: 180px;
+  resize: vertical;
 }
 
 .auth-form button,
@@ -205,6 +211,43 @@ button {
 
 .panel {
   padding: 20px;
+}
+
+.workbench-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.action-card {
+  display: grid;
+  gap: 12px;
+}
+
+.action-card h3,
+.json-form h3,
+.result-panel h3 {
+  margin: 0;
+}
+
+.action-card p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.json-form,
+.result-panel {
+  margin-top: 20px;
+}
+
+.json-form pre,
+.result-panel pre {
+  overflow: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  white-space: pre-wrap;
 }
 
 .toolbar {

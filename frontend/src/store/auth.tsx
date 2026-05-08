@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { getMe, login as loginApi } from '../services/auth'
+import { getMe, login as loginApi, logoutApi } from '../services/auth'
 import { setApiAccessToken, setApiUnauthorizedHandler } from '../services/api'
 import type { UserMeResponse } from '../types/auth'
 
@@ -65,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setMe(profile)
       },
       logout: () => {
+        void logoutApi().catch(() => undefined)
         localStorage.removeItem(TOKEN_STORAGE_KEY)
         setToken(null)
         setApiAccessToken(null)

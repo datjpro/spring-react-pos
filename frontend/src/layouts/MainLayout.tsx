@@ -1,12 +1,20 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { CreditCard, LayoutDashboard, LogOut, Package, ShoppingCart } from 'lucide-react'
+import { Boxes, ClipboardList, CreditCard, KeyRound, LayoutDashboard, LogOut, Package, ScrollText, ShoppingCart, Users } from 'lucide-react'
 import { useAuth } from '../store/auth'
 
 const menuItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/products', label: 'Products', icon: Package },
+  { to: '/master-data', label: 'Master Data', icon: Boxes },
+  { to: '/users', label: 'Users', icon: Users },
+  { to: '/auth-tools', label: 'Auth Tools', icon: KeyRound },
+  { to: '/purchases', label: 'Purchases', icon: ShoppingCart },
+  { to: '/sales', label: 'Sales', icon: CreditCard },
   { to: '/orders', label: 'Orders', icon: ShoppingCart },
-  { to: '/pos', label: 'POS', icon: CreditCard },
+  { to: '/pos', label: 'POS', icon: ClipboardList },
+  { to: '/inventory', label: 'Inventory', icon: Boxes },
+  { to: '/reports', label: 'Reports', icon: ScrollText },
+  { to: '/system', label: 'System', icon: ClipboardList },
 ]
 
 export function MainLayout() {

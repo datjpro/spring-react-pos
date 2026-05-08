@@ -21,3 +21,29 @@ export interface ProductPageResponse {
   page: number
   size: number
 }
+
+export interface CreateProductRequest {
+  sku: string
+  name: string
+  category?: string
+  price: number
+  cost?: number
+  stock: number
+  unit: string
+  barcode?: string
+  description?: string
+  imageUrl?: string
+}
+
+export interface UpdateProductRequest {
+  name: string
+  category?: string
+  price: number
+  cost?: number
+  stock: number
+  unit: string
+  barcode?: string
+  description?: string
+  imageUrl?: string
+  active: boolean
+}

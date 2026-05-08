@@ -2,8 +2,18 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from '../components/ProtectedRoute'
 import { MainLayout } from '../layouts/MainLayout'
 import { DashboardPage } from '../pages/DashboardPage'
+import { AuthToolsPage } from '../pages/AuthToolsPage'
+import { InventoryPage } from '../pages/InventoryPage'
 import { LoginPage } from '../pages/LoginPage'
+import { MasterDataPage } from '../pages/MasterDataPage'
+import { OrdersPage } from '../pages/OrdersPage'
+import { PosPage } from '../pages/PosPage'
 import { ProductsPage } from '../pages/ProductsPage'
+import { PurchasesPage } from '../pages/PurchasesPage'
+import { ReportsPage } from '../pages/ReportsPage'
+import { SalesPage } from '../pages/SalesPage'
+import { SystemPage } from '../pages/SystemPage'
+import { UsersPage } from '../pages/UsersPage'
 
 export function AppRoutes() {
   return (
@@ -13,25 +23,19 @@ export function AppRoutes() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/products" element={<ProductsPage />} />
-          <Route path="/orders" element={<PlaceholderPage title="Orders" />} />
-          <Route path="/pos" element={<PlaceholderPage title="POS" />} />
+          <Route path="/master-data" element={<MasterDataPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/auth-tools" element={<AuthToolsPage />} />
+          <Route path="/purchases" element={<PurchasesPage />} />
+          <Route path="/sales" element={<SalesPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/pos" element={<PosPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/system" element={<SystemPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-  )
-}
-
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <section>
-      <header className="page-header">
-        <div>
-          <p className="page-header__eyebrow">Coming next</p>
-          <h2 className="page-header__title">{title}</h2>
-        </div>
-      </header>
-      <div className="panel">Screen shell is ready for the next API integration phase.</div>
-    </section>
   )
 }
