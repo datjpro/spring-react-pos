@@ -14,6 +14,7 @@
 - `V5__create_payments.sql`: tạo `payments` legacy.
 - `V6__add_payment_reference_to_payments.sql`: thêm `payment_reference` cho `payments`.
 - `V7__create_pos_inventory_core.sql`: tạo `suppliers`, `purchases`, `purchase_items`, `sales`, `sale_items`, `stock_movements`, `audit_logs`.
+- `V8__add_performance_indexes.sql`: bổ sung index tối ưu truy vấn danh sách, báo cáo và lịch sử kho.
 
 ## Bảng chính
 
@@ -274,3 +275,20 @@ Index:
 - Nếu yêu cầu tồn kho đa chi nhánh chuẩn, bổ sung bảng `branch_product_stocks(product_id, branch_id, stock)` và đồng bộ với `stock_movements`.
 - Nếu giữ luồng bán hàng mới, không mở rộng thêm `orders`, `payments`, `inventory_adjustments`.
 - Nếu cần thanh toán theo hóa đơn mới, thêm bảng `sale_payments` hoặc refactor `payments` trỏ sang `sales`.
+
+## Index tối ưu bổ sung
+
+Migration `V8__add_performance_indexes.sql` thêm các index sau:
+- `idx_sales_status_branch_created` trên `sales(status, branch_id, created_at)`.
+- `idx_sales_status_creator_created` trên `sales(status, created_by, created_at)`.
+- `idx_purchases_status_branch_created` trên `purchases(status, branch_id, created_at)`.
+- `idx_purchases_status_supplier_created` trên `purchases(status, supplier_id, created_at)`.
+- `idx_sale_items_sale` trên `sale_items(sale_id)`.
+- `idx_sale_items_product` trên `sale_items(product_id)`.
+- `idx_purchase_items_purchase` trên `purchase_items(purchase_id)`.
+- `idx_purchase_items_product` trên `purchase_items(product_id)`.
+- `idx_stock_movements_product_branch_created` trên `stock_movements(product_id, branch_id, created_at)`.
+- `idx_products_active_category_name` trên `products(active, category, name)`.
+- `idx_products_active_stock` trên `products(active, stock)`.
+- `idx_branches_active_name` trên `branches(active, name)`.
+- `idx_suppliers_active_name` trên `suppliers(active, name)`.
