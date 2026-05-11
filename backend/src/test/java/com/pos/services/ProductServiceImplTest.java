@@ -1,4 +1,4 @@
-﻿package com.pos.services;
+package com.pos.services;
 
 import com.pos.services.impl.ProductServiceImpl;
 

@@ -3,6 +3,8 @@ package com.pos.controllers;
 import com.pos.dtos.request.*;
 import com.pos.dtos.response.*;
 import com.pos.services.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -14,12 +16,15 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 
 @RestController @Validated @RequestMapping("/api/v1/stock-movements")
+@Tag(name = "Stock Movements", description = "Stock movement query and adjustment endpoints")
 public class StockMovementController {
     private final StockMovementService stockMovementService;
     private final StockAdjustmentService stockAdjustmentService;
     public StockMovementController(StockMovementService stockMovementService, StockAdjustmentService stockAdjustmentService){this.stockMovementService=stockMovementService; this.stockAdjustmentService=stockAdjustmentService;}
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')") @GetMapping
+    @Operation(summary = "List stock movements", description = "Get paginated stock movements by branch")
     public ResponseEntity<Page<StockMovementResponse>> findByBranch(@RequestParam @Min(1) Long branchId,@RequestParam(defaultValue="0") @Min(0) int page,@RequestParam(defaultValue="20") @Min(1) @Max(100) int size){return ResponseEntity.ok(stockMovementService.findByBranch(branchId,page,size));}
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')") @PostMapping("/adjustments")
+    @Operation(summary = "Create stock adjustment", description = "Create direct stock movement adjustment")
     public ResponseEntity<StockAdjustmentResponse> adjust(@Valid @RequestBody StockAdjustmentRequest request, Authentication authentication){return ResponseEntity.status(HttpStatus.CREATED).body(stockAdjustmentService.adjust(request, authentication));}
 }

@@ -2,6 +2,8 @@ package com.pos.controllers;
 
 import com.pos.dtos.response.*;
 import com.pos.services.ReportService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,6 +26,7 @@ import java.util.List;
 @Validated
 @RequestMapping("/api/v1/reports")
 @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+@Tag(name = "Reports", description = "Revenue, profit, stock and summary reports")
 public class ReportController {
 
     private final ReportService reportService;
@@ -33,6 +36,7 @@ public class ReportController {
     }
 
     @GetMapping("/revenue")
+    @Operation(summary = "Revenue report", description = "Get revenue and order count by period")
     public ResponseEntity<RevenueReportResponse> getRevenueReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
@@ -42,6 +46,7 @@ public class ReportController {
     }
 
     @GetMapping("/top-products")
+    @Operation(summary = "Top products", description = "Get top selling products by quantity or revenue")
     public ResponseEntity<List<TopProductResponse>> getTopProducts(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
@@ -52,11 +57,13 @@ public class ReportController {
     }
 
     @GetMapping("/inventory-summary")
+    @Operation(summary = "Inventory summary", description = "Get inventory aggregate metrics")
     public ResponseEntity<InventorySummaryResponse> getInventorySummary() {
         return ResponseEntity.ok(reportService.getInventorySummary());
     }
 
     @GetMapping("/profit")
+    @Operation(summary = "Profit report", description = "Get profit by period")
     public ResponseEntity<ProfitReportResponse> getProfitReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
@@ -66,6 +73,7 @@ public class ReportController {
     }
 
     @GetMapping("/stock-card")
+    @Operation(summary = "Stock card", description = "Get stock movement timeline for a product in branch")
     public ResponseEntity<StockCardReportResponse> getStockCard(
             @RequestParam @Min(1) Long productId,
             @RequestParam @Min(1) Long branchId,
@@ -75,6 +83,7 @@ public class ReportController {
     }
 
     @GetMapping("/purchase-summary")
+    @Operation(summary = "Purchase summary", description = "Get aggregated purchases by filters")
     public ResponseEntity<PurchaseSummaryResponse> getPurchaseSummary(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
@@ -84,6 +93,7 @@ public class ReportController {
     }
 
     @GetMapping("/sales-summary")
+    @Operation(summary = "Sales summary", description = "Get aggregated sales by filters")
     public ResponseEntity<SalesSummaryResponse> getSalesSummary(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
@@ -93,6 +103,7 @@ public class ReportController {
     }
 
     @GetMapping("/export")
+    @Operation(summary = "Export CSV report", description = "Export selected report type in csv format")
     public ResponseEntity<String> exportReport(
             @RequestParam String type,
             @RequestParam(defaultValue = "csv") String format,
