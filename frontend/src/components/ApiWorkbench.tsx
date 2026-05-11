@@ -1,4 +1,5 @@
-import { FormEvent, ReactNode, useState } from 'react'
+﻿import { FormEvent, ReactNode, useMemo, useState } from 'react'
+import { Activity, Play, Sparkles } from 'lucide-react'
 import { getApiErrorMessage } from '../utils/apiError'
 
 export interface WorkbenchAction {
@@ -19,6 +20,14 @@ export function ApiWorkbench({ title, eyebrow, actions, children }: ApiWorkbench
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<unknown>(null)
 
+  const latestResult = useMemo(() => {
+    if (!result) {
+      return 'No action executed yet.'
+    }
+
+    return JSON.stringify(result, null, 2)
+  }, [result])
+
   async function runAction(action: WorkbenchAction) {
     setLoadingAction(action.name)
     setError(null)
@@ -34,34 +43,60 @@ export function ApiWorkbench({ title, eyebrow, actions, children }: ApiWorkbench
   }
 
   return (
-    <section>
+    <section className="page-stack">
       <header className="page-header">
         <div>
           <p className="page-header__eyebrow">{eyebrow}</p>
           <h2 className="page-header__title">{title}</h2>
+          <p className="page-header__description">Live API workbench giữ backend contract thật, bọc lại bằng admin UI dễ dùng hơn.</p>
         </div>
       </header>
 
       {children}
 
-      <div className="workbench-grid">
-        {actions.map((action) => (
-          <article key={action.name} className="panel action-card">
-            <h3>{action.name}</h3>
-            <p>{action.description}</p>
-            <button type="button" onClick={() => runAction(action)} disabled={loadingAction === action.name}>
-              {loadingAction === action.name ? 'Running...' : 'Run'}
-            </button>
-          </article>
-        ))}
-      </div>
+      <section className="panel panel--soft">
+        <div className="panel__header">
+          <div>
+            <p className="panel__eyebrow">Quick Actions</p>
+            <h3>Run backend endpoints</h3>
+          </div>
+          <span className="inline-badge inline-badge--info">
+            <Sparkles size={14} />
+            {actions.length} actions
+          </span>
+        </div>
+
+        <div className="workbench-grid">
+          {actions.map((action) => (
+            <article key={action.name} className="action-card">
+              <div>
+                <h3>{action.name}</h3>
+                <p>{action.description}</p>
+              </div>
+              <button type="button" className="primary-button" onClick={() => runAction(action)} disabled={loadingAction === action.name}>
+                <Play size={14} />
+                {loadingAction === action.name ? 'Running...' : 'Run action'}
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
 
       {error ? <p className="page-state page-state--error">{error}</p> : null}
 
-      <div className="panel result-panel">
-        <h3>Latest result</h3>
-        <pre>{result ? JSON.stringify(result, null, 2) : 'No action executed yet.'}</pre>
-      </div>
+      <section className="panel result-panel">
+        <div className="panel__header">
+          <div>
+            <p className="panel__eyebrow">Response</p>
+            <h3>Latest result</h3>
+          </div>
+          <span className="inline-badge inline-badge--success">
+            <Activity size={14} />
+            Live output
+          </span>
+        </div>
+        <pre>{latestResult}</pre>
+      </section>
     </section>
   )
 }
@@ -95,10 +130,15 @@ export function JsonForm<T>({ title, initialValue, onSubmit }: JsonFormProps<T>)
 
   return (
     <form className="panel json-form" onSubmit={handleSubmit}>
-      <h3>{title}</h3>
+      <div className="panel__header">
+        <div>
+          <p className="panel__eyebrow">JSON Form</p>
+          <h3>{title}</h3>
+        </div>
+      </div>
       <textarea value={value} onChange={(event) => setValue(event.target.value)} rows={8} />
-      <button type="submit" disabled={submitting}>
-        {submitting ? 'Submitting...' : 'Submit'}
+      <button type="submit" className="primary-button" disabled={submitting}>
+        {submitting ? 'Submitting...' : 'Submit payload'}
       </button>
       {message ? <pre>{message}</pre> : null}
     </form>
