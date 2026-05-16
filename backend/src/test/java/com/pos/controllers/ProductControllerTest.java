@@ -97,7 +97,7 @@ class ProductControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createProductRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation failed"));
+                .andExpect(jsonPath("$.message").value("Input data is invalid"));
     }
 
     @Test
