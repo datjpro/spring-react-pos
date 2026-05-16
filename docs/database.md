@@ -1,4 +1,4 @@
-﻿# Database hệ thống POS
+# Database hệ thống POS
 
 ## Nền tảng
 - Database: PostgreSQL.
@@ -7,13 +7,10 @@
 - Base entity dùng `id`, `created_at`, `updated_at` tùy loại entity.
 
 ## Migration hiện có
-- `V1__create_foundation_tables.sql`: tạo nền tảng `branches`, `users`, `refresh_tokens`, `products`, `inventory_adjustments`.
+- `V1__create_foundation_tables.sql`: tạo nền tảng `branches`, `users`, `refresh_tokens`, `products`.
 - `V2__add_updated_at_to_refresh_tokens.sql`: thêm `updated_at` cho `refresh_tokens`.
-- `V3__create_orders.sql`: tạo `orders` legacy.
-- `V4__create_order_items.sql`: tạo `order_items` legacy.
-- `V5__create_payments.sql`: tạo `payments` legacy.
-- `V6__add_payment_reference_to_payments.sql`: thêm `payment_reference` cho `payments`.
-- `V7__create_pos_inventory_core.sql`: tạo `suppliers`, `purchases`, `purchase_items`, `sales`, `sale_items`, `stock_movements`, `audit_logs`.
+- `V3` đến `V6`: migration cũ còn trong lịch sử Flyway để tương thích database đã tạo trước đó.
+- `V7__create_pos_inventory_core.sql`: tạo bảng nghiệp vụ chính `suppliers`, `purchases`, `purchase_items`, `sales`, `sale_items`, `stock_movements`, `audit_logs`.
 - `V8__add_performance_indexes.sql`: bổ sung index tối ưu truy vấn danh sách, báo cáo và lịch sử kho.
 
 ## Bảng chính
@@ -209,40 +206,6 @@ Cột chính:
 Index:
 - `idx_audit_logs_created` trên `created_at`.
 
-## Bảng legacy
-
-### `orders`
-Lưu đơn hàng theo luồng cũ.
-
-Cột chính:
-- `id`, `order_code`, `cashier_id`, `status`, `subtotal`, `discount_amount`, `total_amount`, `created_at`, `updated_at`.
-
-Quan hệ:
-- `orders.cashier_id` tham chiếu `users.id`.
-- Một order có nhiều `order_items`.
-- Một order có nhiều `payments`.
-
-### `order_items`
-Lưu dòng sản phẩm của order legacy.
-
-Cột chính:
-- `id`, `order_id`, `product_id`, `unit_price`, `quantity`, `line_total`, `created_at`, `updated_at`.
-
-### `payments`
-Lưu thanh toán của order legacy.
-
-Cột chính:
-- `id`, `order_id`, `payment_method`, `payment_reference`, `status`, `amount_paid`, `amount_received`, `change_amount`, `note`, `created_at`, `updated_at`.
-
-### `inventory_adjustments`
-Lưu điều chỉnh kho legacy không theo chi nhánh.
-
-Cột chính:
-- `id`, `product_id`, `adjustment_type`, `quantity`, `reason`, `note`, `created_by`, `created_at`.
-
-Index:
-- `idx_inventory_adjustments_product_created_at` trên `product_id`, `created_at`.
-
 ## Luồng dữ liệu nghiệp vụ
 
 ### Nhập hàng
@@ -273,8 +236,8 @@ Index:
 
 ## Ghi chú phát triển tiếp
 - Nếu yêu cầu tồn kho đa chi nhánh chuẩn, bổ sung bảng `branch_product_stocks(product_id, branch_id, stock)` và đồng bộ với `stock_movements`.
-- Nếu giữ luồng bán hàng mới, không mở rộng thêm `orders`, `payments`, `inventory_adjustments`.
-- Nếu cần thanh toán theo hóa đơn mới, thêm bảng `sale_payments` hoặc refactor `payments` trỏ sang `sales`.
+- Nếu cần thanh toán chi tiết cho hóa đơn bán, thêm bảng `sale_payments` trỏ trực tiếp sang `sales`.
+- Không dùng lại luồng bán hàng cũ trong migration lịch sử cho nghiệp vụ chính của đồ án.
 
 ## Index tối ưu bổ sung
 

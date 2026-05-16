@@ -2,7 +2,7 @@
 
 Thư mục này chứa report Markdown được sinh bởi script `backend/scripts/run-business-e2e-report.ps1`.
 
-Script này kiểm tra end-to-end hầu hết endpoint backend: auth, users, branches, suppliers, products, orders, payments, inventory, stock-movements, purchases, sales, reports, audit-logs.
+Script này kiểm tra end-to-end các endpoint backend chính: auth, users, branches, suppliers, products, stock-movements, purchases, sales, reports, audit-logs.
 
 ## Ý nghĩa field trong report
 - `Status`: kết quả cuối của toàn bộ lần chạy.

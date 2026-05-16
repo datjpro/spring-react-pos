@@ -1,4 +1,4 @@
-﻿# API hệ thống POS
+# API hệ thống POS
 
 Tài liệu mô tả các endpoint REST hiện có trong backend.
 
@@ -472,73 +472,7 @@ Request body:
 }
 ```
 
-## 11. Legacy endpoint
-
-Các endpoint dưới đây đang còn trong backend nhưng không phải luồng chính theo định hướng hiện tại. Chỉ dùng khi cần kiểm thử hoặc bảo trì luồng cũ.
-
-### Order legacy
-- `POST /api/v1/orders`
-- `GET /api/v1/orders`
-- `GET /api/v1/orders/{id}`
-- `POST /api/v1/orders/{id}/cancel`
-
-Request tạo order:
-```json
-{
-  "items": [
-    {
-      "productId": 1,
-      "quantity": 2
-    }
-  ],
-  "discountAmount": 0
-}
-```
-
-Request hủy order:
-```json
-{
-  "reason": "Khách hủy đơn"
-}
-```
-
-### Payment legacy
-- `POST /api/v1/payments`
-- `GET /api/v1/payments?orderId={orderId}`
-- `GET /api/v1/payments/{id}`
-
-Request tạo payment:
-```json
-{
-  "orderId": 1,
-  "paymentMethod": "CASH",
-  "amountReceived": 50000,
-  "paymentReference": "",
-  "note": "Thu tiền mặt"
-}
-```
-
-`paymentMethod` thường dùng: `CASH`, `CARD`, `TRANSFER` nếu enum backend hỗ trợ.
-
-### Inventory legacy
-- `POST /api/v1/inventory/adjustments`
-- `GET /api/v1/inventory/adjustments`
-- `GET /api/v1/inventory/low-stock`
-
-Request điều chỉnh inventory legacy:
-```json
-{
-  "productId": 1,
-  "adjustmentType": "INCREASE",
-  "quantity": 5,
-  "reason": "Bổ sung tồn kho",
-  "note": "Điều chỉnh thủ công"
-}
-```
-
-`adjustmentType`: `INCREASE`, `DECREASE` nếu enum backend hỗ trợ.
-
-## 12. Bộ test Postman
+## 11. Bộ test Postman
 
 File Postman collection: `docs/postman/pos-system-endpoints.postman_collection.json`.
 
@@ -547,9 +481,9 @@ Cách dùng:
 2. Import collection vào Postman.
 3. Chạy request `Đăng nhập admin` trước.
 4. Chạy folder theo thứ tự từ `00` đến `09`.
-5. Collection tự lưu các biến phụ thuộc như `accessToken`, `productId`, `branchId`, `supplierId`, `orderId`.
+5. Collection tự lưu các biến phụ thuộc như `accessToken`, `productId`, `branchId`, `supplierId`, `purchaseId`, `saleId`.
 
-## 13. Gợi ý commit tiếng Việt
+## 12. Gợi ý commit tiếng Việt
 
 - `docs: cập nhật tài liệu API theo endpoint backend hiện tại`
 - `test: bổ sung bộ Postman tiếng Việt cho endpoint hệ thống POS`

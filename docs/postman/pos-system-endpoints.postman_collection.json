@@ -1,4 +1,4 @@
-﻿{
+{
   "info": {
     "name": "POS - Bộ test endpoint hệ thống (chi tiết)",
     "_postman_id": "2f547640-40dc-4ec0-9406-84a8f3f719b7",
@@ -44,21 +44,6 @@
     {
       "key": "saleId",
       "value": "",
-      "type": "string"
-    },
-    {
-      "key": "orderId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "paymentId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "orderTotalAmount",
-      "value": "0",
       "type": "string"
     }
   ],
@@ -160,7 +145,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('LÃ m má»i token thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Làm mới token thành công', function () { pm.response.to.have.status(200); });",
                   "const data = pm.response.json();",
                   "pm.test('Có accessToken mới', function () { pm.expect(data.accessToken).to.be.a('string').and.not.empty; });",
                   "pm.collectionVariables.set('accessToken', data.accessToken);"
@@ -205,7 +190,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('ÄÄng xuáº¥t thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Đăng xuất thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -337,7 +322,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y danh sÃ¡ch sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy danh sách sản phẩm thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -379,7 +364,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y chi tiáº¿t sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy chi tiết sản phẩm thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -436,7 +421,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Cáº­p nháº­t sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Cập nhật sản phẩm thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -478,7 +463,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y danh má»¥c sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy danh mục sản phẩm thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -540,7 +525,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Táº¡o chi nhÃ¡nh thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Tạo chi nhánh thành công', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('branchId', data.id);"
                 ]
@@ -583,14 +568,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y danh sÃ¡ch chi nhÃ¡nh thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy danh sách chi nhánh thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Láº¥y chi tiáº¿t chi nhÃ¡nh",
+          "name": "Lấy chi tiết chi nhánh",
           "request": {
             "method": "GET",
             "header": [],
@@ -624,7 +609,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y chi tiáº¿t chi nhÃ¡nh thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy chi tiết chi nhánh thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -682,7 +667,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Cáº­p nháº­t chi nhÃ¡nh thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Cập nhật chi nhánh thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -744,7 +729,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Táº¡o nhÃ  cung cáº¥p thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Tạo nhà cung cấp thành công', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('supplierId', data.id);"
                 ]
@@ -787,14 +772,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y danh sÃ¡ch nhÃ  cung cáº¥p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy danh sách nhà cung cấp thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Láº¥y chi tiáº¿t nhÃ  cung cáº¥p",
+          "name": "Lấy chi tiết nhà cung cấp",
           "request": {
             "method": "GET",
             "header": [],
@@ -828,7 +813,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y chi tiáº¿t nhÃ  cung cáº¥p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy chi tiết nhà cung cấp thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -886,7 +871,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Cáº­p nháº­t nhÃ  cung cáº¥p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Cập nhật nhà cung cấp thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -948,7 +933,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Táº¡o phiáº¿u nháº­p thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Tạo phiếu nhập thành công', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('purchaseId', data.id);"
                 ]
@@ -991,14 +976,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y danh sÃ¡ch phiáº¿u nháº­p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy danh sách phiếu nhập thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Láº¥y chi tiáº¿t phiáº¿u nháº­p",
+          "name": "Lấy chi tiết phiếu nhập",
           "request": {
             "method": "GET",
             "header": [],
@@ -1032,7 +1017,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y chi tiáº¿t phiáº¿u nháº­p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy chi tiết phiếu nhập thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1040,7 +1025,7 @@
           "response": []
         },
         {
-          "name": "Há»§y phiáº¿u nháº­p",
+          "name": "Hủy phiếu nhập",
           "request": {
             "method": "POST",
             "header": [
@@ -1076,7 +1061,7 @@
             "description": "Hủy phiếu nhập và hoàn tác tồn kho đã cộng trước đó. Kết quả mong đợi: 200, status chuyển CANCELLED.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reason\": \"Nháº­p sai phiếu\"\n}\n",
+              "raw": "{\n  \"reason\": \"Nhập sai phiếu\"\n}\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1090,7 +1075,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Há»§y phiáº¿u nháº­p thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Hủy phiếu nhập thành công', function () { pm.response.to.have.status(200); });",
                   "const data = pm.response.json();",
                   "pm.test('Trạng thái đã hủy', function () { pm.expect(data.status).to.eql('CANCELLED'); });"
                 ]
@@ -1155,7 +1140,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Táº¡o hÃ³a ÄÆ¡n bÃ¡n thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Tạo hóa đơn bán thành công', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
                   "pm.collectionVariables.set('saleId', data.id);"
                 ]
@@ -1198,14 +1183,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y danh sÃ¡ch hÃ³a ÄÆ¡n bÃ¡n thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy danh sách hóa đơn bán thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Láº¥y chi tiáº¿t hÃ³a ÄÆ¡n bÃ¡n",
+          "name": "Lấy chi tiết hóa đơn bán",
           "request": {
             "method": "GET",
             "header": [],
@@ -1239,7 +1224,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y chi tiáº¿t hÃ³a ÄÆ¡n bÃ¡n thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy chi tiết hóa đơn bán thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1247,7 +1232,7 @@
           "response": []
         },
         {
-          "name": "Há»§y hÃ³a ÄÆ¡n bÃ¡n",
+          "name": "Hủy hóa đơn bán",
           "request": {
             "method": "POST",
             "header": [
@@ -1283,7 +1268,7 @@
             "description": "Hủy hóa đơn bán và hoàn tác số lượng đã trừ khỏi tồn kho. Kết quả mong đợi: 200, trạng thái CANCELLED.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reason\": \"Há»§y hóa đơn nhập sai\"\n}\n",
+              "raw": "{\n  \"reason\": \"Hủy hóa đơn nhập sai\"\n}\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1297,7 +1282,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Há»§y hÃ³a ÄÆ¡n bÃ¡n thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Hủy hóa đơn bán thành công', function () { pm.response.to.have.status(200); });",
                   "const data = pm.response.json();",
                   "pm.test('Trạng thái đã hủy', function () { pm.expect(data.status).to.eql('CANCELLED'); });"
                 ]
@@ -1357,7 +1342,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y stock movement thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy stock movement thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1414,7 +1399,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Äiá»u chá»nh stock movement thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Điều chỉnh stock movement thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1471,7 +1456,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y audit log thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy audit log thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1537,7 +1522,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y bÃ¡o cÃ¡o doanh thu thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy báo cáo doanh thu thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1601,7 +1586,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y top sáº£n pháº©m thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy top sản phẩm thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1643,7 +1628,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y tá»ng quan tá»n kho thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy tổng quan tồn kho thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1711,14 +1696,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Xuáº¥t bÃ¡o cÃ¡o CSV thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Xuất báo cáo CSV thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "BÃ¡o cÃ¡o lá»£i nhuáº­n",
+          "name": "Báo cáo lợi nhuận",
           "request": {
             "method": "GET",
             "header": [],
@@ -1770,7 +1755,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('BÃ¡o cÃ¡o lá»£i nhuáº­n thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Báo cáo lợi nhuận thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1778,7 +1763,7 @@
           "response": []
         },
         {
-          "name": "BÃ¡o cÃ¡o tháº» kho",
+          "name": "Báo cáo thẻ kho",
           "request": {
             "method": "GET",
             "header": [],
@@ -1822,7 +1807,7 @@
                 }
               ]
             },
-            "description": "BÃ¡o cÃ¡o biáº¿n Äá»ng tá»n kho theo sáº£n pháº©m vÃ  chi nhÃ¡nh."
+            "description": "Báo cáo biến động tồn kho theo sản phẩm và chi nhánh."
           },
           "event": [
             {
@@ -1830,7 +1815,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('BÃ¡o cÃ¡o tháº» kho thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Báo cáo thẻ kho thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1838,7 +1823,7 @@
           "response": []
         },
         {
-          "name": "BÃ¡o cÃ¡o tá»ng há»£p nháº­p hÃ ng",
+          "name": "Báo cáo tổng hợp nhập hàng",
           "request": {
             "method": "GET",
             "header": [],
@@ -1890,7 +1875,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('BÃ¡o cÃ¡o tá»ng há»£p nháº­p hÃ ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Báo cáo tổng hợp nhập hàng thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1898,7 +1883,7 @@
           "response": []
         },
         {
-          "name": "BÃ¡o cÃ¡o tá»ng há»£p bÃ¡n hÃ ng",
+          "name": "Báo cáo tổng hợp bán hàng",
           "request": {
             "method": "GET",
             "header": [],
@@ -1950,7 +1935,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('BÃ¡o cÃ¡o tá»ng há»£p bÃ¡n hÃ ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Báo cáo tổng hợp bán hàng thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -1960,535 +1945,11 @@
       ]
     },
     {
-      "name": "09 - Legacy order/payment/inventory",
-      "description": "Nhóm endpoint legacy: chỉ dùng khi cần bảo trì hoặc đối soát luồng cũ.",
-      "item": [
-        {
-          "name": "Tạo order legacy",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "orders"
-              ]
-            },
-            "description": "Kết quả: 201, sinh orderId và orderTotalAmount.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"items\": [\n    {\n      \"productId\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"discountAmount\": 0\n}\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Táº¡o order legacy thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });",
-                  "const data = pm.response.json();",
-                  "pm.collectionVariables.set('orderId', data.id);",
-                  "pm.collectionVariables.set('orderTotalAmount', data.totalAmount);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Lấy danh sách order legacy",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/orders?page=0&size=20",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "orders"
-              ],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "20"
-                }
-              ]
-            },
-            "description": "Kết quả: 200.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Láº¥y danh sÃ¡ch order thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Lấy chi tiết order legacy",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "orders",
-                "{{orderId}}"
-              ]
-            },
-            "description": "Kết quả: 200.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Láº¥y chi tiáº¿t order thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Thanh toán order legacy",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/payments",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "payments"
-              ]
-            },
-            "description": "Kết quả: 201, sinh paymentId.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"orderId\": {{orderId}},\n  \"paymentMethod\": \"CASH\",\n  \"amountReceived\": {{orderTotalAmount}},\n  \"paymentReference\": \"\",\n  \"note\": \"Thanh toán order legacy từ Postman\"\n}\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Tạo thanh toán legacy thành công', function () { pm.response.to.have.status(201); });",
-                  "const data = pm.response.json();",
-                  "pm.collectionVariables.set('paymentId', data.id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Lấy chi tiết payment legacy",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/payments/{{paymentId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "payments",
-                "{{paymentId}}"
-              ]
-            },
-            "description": "Kết quả: 200.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Láº¥y chi tiáº¿t payment thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Lấy danh sách payment theo order",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/payments?orderId={{orderId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "payments"
-              ],
-              "query": [
-                {
-                  "key": "orderId",
-                  "value": "{{orderId}}"
-                }
-              ]
-            },
-            "description": "Kết quả: 200.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Láº¥y payment theo order thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Điều chỉnh inventory legacy",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/inventory/adjustments",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "inventory",
-                "adjustments"
-              ]
-            },
-            "description": "Kết quả: 200.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"productId\": {{productId}},\n  \"adjustmentType\": \"INCREASE\",\n  \"quantity\": 2,\n  \"reason\": \"Bổ sung tồn kho\",\n  \"note\": \"Test inventory legacy từ Postman\"\n}\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Äiá»u chá»nh kho legacy thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Lịch sử điều chỉnh inventory legacy",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/inventory/adjustments?page=0&size=20&productId={{productId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "inventory",
-                "adjustments"
-              ],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "20"
-                },
-                {
-                  "key": "productId",
-                  "value": "{{productId}}"
-                }
-              ]
-            },
-            "description": "Kết quả: 200.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Láº¥y lá»ch sá»­ inventory adjustment thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Sản phẩm sắp hết hàng legacy",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/inventory/low-stock?threshold=30",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "inventory",
-                "low-stock"
-              ],
-              "query": [
-                {
-                  "key": "threshold",
-                  "value": "30"
-                }
-              ]
-            },
-            "description": "Kết quả: 200.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Láº¥y low stock thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Hủy order legacy",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/cancel",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "orders",
-                "{{orderId}}",
-                "cancel"
-              ]
-            },
-            "description": "Kết quả: 200.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"Hủy test từ Postman\"\n}\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Há»§y order thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "10 - Quáº£n trá» ngÆ°á»i dÃ¹ng",
+      "name": "10 - Quản trị người dùng",
       "description": "Quản trị người dùng: danh sách, hồ sơ hiện tại, tạo, cập nhật, khóa/mở.",
       "item": [
         {
-          "name": "Láº¥y danh sÃ¡ch ngÆ°á»i dÃ¹ng",
+          "name": "Lấy danh sách người dùng",
           "request": {
             "method": "GET",
             "header": [],
@@ -2513,7 +1974,7 @@
                 "users"
               ]
             },
-            "description": "Quyá»n ADMIN. Láº¥y danh sÃ¡ch tÃ i khoáº£n."
+            "description": "Quyền ADMIN. Lấy danh sách tài khoản."
           },
           "event": [
             {
@@ -2521,7 +1982,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y danh sÃ¡ch ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy danh sách người dùng thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2529,7 +1990,7 @@
           "response": []
         },
         {
-          "name": "Láº¥y há» sÆ¡ ngÆ°á»i dÃ¹ng hiá»n táº¡i",
+          "name": "Lấy hồ sơ người dùng hiện tại",
           "request": {
             "method": "GET",
             "header": [],
@@ -2563,7 +2024,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Láº¥y há» sÆ¡ hiá»n táº¡i thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Lấy hồ sơ hiện tại thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
@@ -2571,7 +2032,7 @@
           "response": []
         },
         {
-          "name": "Táº¡o ngÆ°á»i dÃ¹ng",
+          "name": "Tạo người dùng",
           "request": {
             "method": "POST",
             "header": [
@@ -2602,7 +2063,7 @@
                 "users"
               ]
             },
-            "description": "Quyá»n ADMIN. Táº¡o tÃ i khoáº£n má»i.",
+            "description": "Quyền ADMIN. Tạo tài khoản mới.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"staff01\",\n  \"password\": \"123456\",\n  \"role\": \"STAFF\",\n  \"branchId\": {{branchId}},\n  \"active\": true\n}\n",
@@ -2619,7 +2080,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Táº¡o ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(201); });"
+                  "pm.test('Tạo người dùng thành công', function () { pm.response.to.have.status(201); });"
                 ]
               }
             }
@@ -2627,7 +2088,7 @@
           "response": []
         },
         {
-          "name": "Cáº­p nháº­t ngÆ°á»i dÃ¹ng",
+          "name": "Cập nhật người dùng",
           "request": {
             "method": "PUT",
             "header": [
@@ -2659,7 +2120,7 @@
                 "1"
               ]
             },
-            "description": "Quyá»n ADMIN. Cáº­p nháº­t role/branch/active.",
+            "description": "Quyền ADMIN. Cập nhật role/branch/active.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"role\": \"MANAGER\",\n  \"branchId\": {{branchId}},\n  \"active\": true\n}\n",
@@ -2676,7 +2137,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Cáº­p nháº­t ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng', function () { pm.response.to.have.status(200); });"
+                  "pm.test('Cập nhật người dùng thành công', function () { pm.response.to.have.status(200); });"
                 ]
               }
             }
