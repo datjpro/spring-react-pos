@@ -32,6 +32,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final SupplierRepository supplierRepository;
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
+    private final BranchProductStockService branchProductStockService;
     private final StockMovementService stockMovementService;
     private final AuditLogService auditLogService;
     private final UserContextService userContextService;
@@ -39,12 +40,14 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     public PurchaseServiceImpl(PurchaseRepository purchaseRepository, SupplierRepository supplierRepository,
             BranchRepository branchRepository, ProductRepository productRepository,
-            StockMovementService stockMovementService, AuditLogService auditLogService,
+            BranchProductStockService branchProductStockService, StockMovementService stockMovementService,
+            AuditLogService auditLogService,
             UserContextService userContextService, BranchAccessGuard branchAccessService) {
         this.purchaseRepository = purchaseRepository;
         this.supplierRepository = supplierRepository;
         this.branchRepository = branchRepository;
         this.productRepository = productRepository;
+        this.branchProductStockService = branchProductStockService;
         this.stockMovementService = stockMovementService;
         this.auditLogService = auditLogService;
         this.userContextService = userContextService;
@@ -69,8 +72,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         for (CreatePurchaseItemRequest itemRequest : request.items()) {
             ProductEntity product = productRepository.findByIdAndActiveTrue(itemRequest.productId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-            product.setStock(product.getStock() + itemRequest.quantity());
-            productRepository.save(product);
+            branchProductStockService.adjustStock(product, branch, itemRequest.quantity());
             PurchaseItemEntity item = new PurchaseItemEntity();
             item.setProduct(product);
             item.setQuantity(itemRequest.quantity());
@@ -112,12 +114,11 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         for (PurchaseItemEntity item : purchase.getItems()) {
             ProductEntity product = item.getProduct();
-            int newStock = product.getStock() - item.getQuantity();
-            if (newStock < 0) {
+            try {
+                branchProductStockService.adjustStock(product, purchase.getBranch(), -item.getQuantity());
+            } catch (BadRequestException badRequestException) {
                 throw new BadRequestException("Insufficient stock to cancel purchase");
             }
-            product.setStock(newStock);
-            productRepository.save(product);
             stockMovementService.record(product, purchase.getBranch(), MovementType.OUT, item.getQuantity(),
                     "PURCHASE_CANCEL", purchase.getId(), request.reason(), user.getUsername());
         }

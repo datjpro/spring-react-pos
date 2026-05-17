@@ -24,6 +24,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +37,8 @@ class SaleServiceImplTest {
     private BranchRepository branchRepository;
     @Mock
     private ProductRepository productRepository;
+    @Mock
+    private BranchProductStockService branchProductStockService;
     @Mock
     private StockMovementService stockMovementService;
     @Mock
@@ -55,6 +58,7 @@ class SaleServiceImplTest {
                 saleRepository,
                 branchRepository,
                 productRepository,
+                branchProductStockService,
                 stockMovementService,
                 auditLogService,
                 userContextService,
@@ -93,12 +97,13 @@ class SaleServiceImplTest {
         when(userRepository.findByUsernameAndActiveTrue("admin")).thenReturn(Optional.of(user));
         when(saleRepository.findById(1L)).thenReturn(Optional.of(sale));
         when(saleRepository.save(any(SaleEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(branchProductStockService.adjustStock(any(ProductEntity.class), any(BranchEntity.class), anyInt()))
+                .thenReturn(5);
 
         SaleResponse response = saleService.cancel(1L, new CancelSaleRequest("H?y test"), authentication);
 
         assertEquals(SaleStatus.CANCELLED, response.status());
-        assertEquals(5, sale.getItems().get(0).getProduct().getStock());
+        verify(branchProductStockService).adjustStock(any(ProductEntity.class), any(BranchEntity.class), anyInt());
         verify(stockMovementService).record(any(), any(), any(), any(), any(), any(), any(), any());
         verify(auditLogService).log(any(), any(), any(), any(), any());
     }

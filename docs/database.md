@@ -191,6 +191,21 @@ Index:
 - `idx_stock_movements_branch_created` trên `branch_id`, `created_at`.
 - `idx_stock_movements_product_created` trên `product_id`, `created_at`.
 
+### `branch_product_stocks`
+Lưu tồn kho thực tế theo từng sản phẩm và từng chi nhánh.
+
+Cột chính:
+- `id`: khóa chính.
+- `product_id`: sản phẩm.
+- `branch_id`: chi nhánh.
+- `stock`: tồn hiện tại tại chi nhánh.
+- `created_at`, `updated_at`: thời gian tạo/cập nhật.
+
+Quan hệ:
+- Unique `(product_id, branch_id)` để mỗi sản phẩm chỉ có một dòng tồn cho mỗi chi nhánh.
+- Luồng `purchases`, `sales`, `stock_movements/adjustments` cập nhật bảng này trước.
+- `products.stock` vẫn được giữ làm tồn tổng toàn hệ thống để tương thích API cũ.
+
 ### `audit_logs`
 Lưu nhật ký thao tác nghiệp vụ.
 
@@ -212,7 +227,7 @@ Index:
 1. User gửi `POST /api/v1/purchases`.
 2. Service kiểm tra user, chi nhánh, nhà cung cấp, sản phẩm.
 3. Tạo `purchases` và `purchase_items`.
-4. Cộng `products.stock`.
+4. Cộng `branch_product_stocks.stock` của đúng chi nhánh, rồi đồng bộ `products.stock`.
 5. Ghi `stock_movements` với `reference_type = PURCHASE`.
 6. Ghi `audit_logs`.
 7. Commit cùng transaction.
@@ -221,7 +236,7 @@ Index:
 1. User gửi `POST /api/v1/sales`.
 2. Service kiểm tra user, chi nhánh, sản phẩm và tồn kho.
 3. Tạo `sales` và `sale_items`.
-4. Trừ `products.stock`.
+4. Trừ `branch_product_stocks.stock` của đúng chi nhánh, rồi đồng bộ `products.stock`.
 5. Ghi `stock_movements` với `reference_type = SALE`.
 6. Ghi `audit_logs`.
 7. Commit cùng transaction.
@@ -229,13 +244,14 @@ Index:
 ### Điều chỉnh tồn kho chính
 1. User gửi `POST /api/v1/stock-movements/adjustments`.
 2. Service kiểm tra sản phẩm, chi nhánh, số lượng và lý do.
-3. Cập nhật `products.stock`.
+3. Cập nhật `branch_product_stocks.stock` của chi nhánh yêu cầu, rồi đồng bộ `products.stock`.
 4. Ghi `stock_movements` với `reference_type = ADJUSTMENT`.
 5. Ghi `audit_logs`.
 6. Commit cùng transaction.
 
 ## Ghi chú phát triển tiếp
 - Nếu yêu cầu tồn kho đa chi nhánh chuẩn, bổ sung bảng `branch_product_stocks(product_id, branch_id, stock)` và đồng bộ với `stock_movements`.
+- Tồn kho đa chi nhánh hiện được quản lý qua `branch_product_stocks`; `products.stock` chỉ là tồn tổng để giữ tương thích.
 - Nếu cần thanh toán chi tiết cho hóa đơn bán, thêm bảng `sale_payments` trỏ trực tiếp sang `sales`.
 - Không dùng lại luồng bán hàng cũ trong migration lịch sử cho nghiệp vụ chính của đồ án.
 

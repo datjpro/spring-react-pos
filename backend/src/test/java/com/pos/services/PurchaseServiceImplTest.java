@@ -24,6 +24,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +39,8 @@ class PurchaseServiceImplTest {
     private BranchRepository branchRepository;
     @Mock
     private ProductRepository productRepository;
+    @Mock
+    private BranchProductStockService branchProductStockService;
     @Mock
     private StockMovementService stockMovementService;
     @Mock
@@ -58,6 +61,7 @@ class PurchaseServiceImplTest {
                 supplierRepository,
                 branchRepository,
                 productRepository,
+                branchProductStockService,
                 stockMovementService,
                 auditLogService,
                 userContextService,
@@ -96,12 +100,13 @@ class PurchaseServiceImplTest {
         when(userRepository.findByUsernameAndActiveTrue("admin")).thenReturn(Optional.of(user));
         when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
         when(purchaseRepository.save(any(PurchaseEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(branchProductStockService.adjustStock(any(ProductEntity.class), any(BranchEntity.class), anyInt()))
+                .thenReturn(5);
 
         PurchaseResponse response = purchaseService.cancel(1L, new CancelPurchaseRequest("H?y test"), authentication);
 
         assertEquals(PurchaseStatus.CANCELLED, response.status());
-        assertEquals(5, purchase.getItems().get(0).getProduct().getStock());
+        verify(branchProductStockService).adjustStock(any(ProductEntity.class), any(BranchEntity.class), anyInt());
         verify(stockMovementService).record(any(), any(), any(), any(), any(), any(), any(), any());
         verify(auditLogService).log(any(), any(), any(), any(), any());
     }
@@ -113,6 +118,8 @@ class PurchaseServiceImplTest {
 
         when(userRepository.findByUsernameAndActiveTrue("admin")).thenReturn(Optional.of(user));
         when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+        when(branchProductStockService.adjustStock(any(ProductEntity.class), any(BranchEntity.class), anyInt()))
+                .thenThrow(new BadRequestException("Insufficient stock for branch"));
 
         assertThrows(BadRequestException.class,
                 () -> purchaseService.cancel(1L, new CancelPurchaseRequest("H?y l?i"), authentication));

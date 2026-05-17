@@ -29,18 +29,21 @@ public class SaleServiceImpl implements SaleService {
     private final SaleRepository saleRepository;
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
+    private final BranchProductStockService branchProductStockService;
     private final StockMovementService stockMovementService;
     private final AuditLogService auditLogService;
     private final UserContextService userContextService;
     private final BranchAccessGuard branchAccessService;
 
     public SaleServiceImpl(SaleRepository saleRepository, BranchRepository branchRepository,
-            ProductRepository productRepository, StockMovementService stockMovementService,
+            ProductRepository productRepository, BranchProductStockService branchProductStockService,
+            StockMovementService stockMovementService,
             AuditLogService auditLogService, UserContextService userContextService,
             BranchAccessGuard branchAccessService) {
         this.saleRepository = saleRepository;
         this.branchRepository = branchRepository;
         this.productRepository = productRepository;
+        this.branchProductStockService = branchProductStockService;
         this.stockMovementService = stockMovementService;
         this.auditLogService = auditLogService;
         this.userContextService = userContextService;
@@ -62,10 +65,11 @@ public class SaleServiceImpl implements SaleService {
         for (CreateSaleItemRequest itemRequest : request.items()) {
             ProductEntity product = productRepository.findByIdAndActiveTrue(itemRequest.productId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-            if (product.getStock() < itemRequest.quantity())
+            try {
+                branchProductStockService.adjustStock(product, branch, -itemRequest.quantity());
+            } catch (BadRequestException badRequestException) {
                 throw new BadRequestException("Insufficient stock for product: " + product.getName());
-            product.setStock(product.getStock() - itemRequest.quantity());
-            productRepository.save(product);
+            }
             SaleItemEntity item = new SaleItemEntity();
             item.setProduct(product);
             item.setQuantity(itemRequest.quantity());
@@ -107,8 +111,7 @@ public class SaleServiceImpl implements SaleService {
 
         for (SaleItemEntity item : sale.getItems()) {
             ProductEntity product = item.getProduct();
-            product.setStock(product.getStock() + item.getQuantity());
-            productRepository.save(product);
+            branchProductStockService.adjustStock(product, sale.getBranch(), item.getQuantity());
             stockMovementService.record(product, sale.getBranch(), MovementType.IN, item.getQuantity(),
                     "SALE_CANCEL", sale.getId(), request.reason(), user.getUsername());
         }

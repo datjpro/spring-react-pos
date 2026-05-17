@@ -63,6 +63,7 @@ public class OpenApiConfig {
                 .group("operations")
                 .pathsToMatch(
                         "/api/v1/stock-movements/**",
+                        "/api/v1/stock-levels/**",
                         "/api/v1/purchases/**",
                         "/api/v1/sales/**"
                 )
