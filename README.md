@@ -7,6 +7,13 @@ Dự án POS dùng **Spring Boot** cho backend và **React + Vite** cho frontend
 - `frontend/`: giao diện quản trị
 - `docs/`: tài liệu API, database, kiến trúc
 
+## Phạm vi nghiệp vụ chính
+- Bán hàng POS tại quầy qua `sales`
+- Nhập hàng từ nhà cung cấp qua `purchases`
+- Quản lý tồn kho đa chi nhánh qua `branch_product_stocks`
+- Điều chỉnh kho qua `stock-movements/adjustments`
+- Báo cáo và audit log phục vụ quản trị
+
 ## Chạy backend
 1. Tạo `.env` từ `.env.example`
 2. Chạy:
@@ -33,7 +40,7 @@ Dự án POS dùng **Spring Boot** cho backend và **React + Vite** cho frontend
 - Auth shell: login, lưu token, auto load `me`, logout, route guard
 - Dashboard shell: gọi `reports/revenue` + `products` để hiện overview
 - Products shell: list + search + loading/error states
-- Route placeholders: `orders`, `pos`
+- Route nghiệp vụ chính: `pos`, `products`, `purchases`, `sales`, `reports`, `users`
 
 ## E2E nghiệp vụ POS
 - Script chính: `backend/scripts/run-business-e2e-report.ps1`

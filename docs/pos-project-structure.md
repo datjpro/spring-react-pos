@@ -16,12 +16,14 @@ spring-react-pos/
 │   │       ├── V4__create_order_items.sql            # legacy
 │   │       ├── V5__create_payments.sql               # legacy
 │   │       ├── V6__add_payment_reference_to_payments.sql # legacy
-│   │       └── V7__create_pos_inventory_core.sql
+│   │       ├── V7__create_pos_inventory_core.sql
+│   │       ├── V8__add_performance_indexes.sql
+│   │       └── V9__create_branch_product_stocks.sql
 │   └── src/main/java/com/pos/
 │       ├── PosApplication.java
-│       ├── config/                      # Security, JWT config, OpenAPI, CORS
+│       ├── config/                      # Security, JWT config, OpenAPI, CORS, bootstrap data
 │       ├── security/                    # JwtTokenProvider, JwtAuthenticationFilter, UserDetailsServiceImpl, BranchAccessGuard
-│       ├── controller/                  # Auth/Product/Supplier/Sale/Purchase/Stock/Branch/Report/Audit + legacy controllers
+│       ├── controller/                  # Auth/Product/Supplier/Sale/Purchase/StockLevel/Stock/Branch/Report/Audit
 │       ├── service/                     # Business logic + transaction
 │       ├── repository/                  # JPA repositories
 │       ├── entity/                      # JPA entities
@@ -61,4 +63,5 @@ Client -> Controller -> Service (@Transactional) -> Repository -> DB
 ## Ghi chú kiến trúc
 
 - Hướng hiện tại là **layered monolith**, không phải microservice/domain-package.
-- `order/payment/inventory` vẫn tồn tại dạng legacy để tương thích, nhưng không phải hướng mở rộng chính.
+- Luồng nghiệp vụ chính chỉ dùng `sales`, `purchases`, `stock-movements`, `stock-levels`, `reports`.
+- Tồn kho thực tế theo chi nhánh nằm ở `branch_product_stocks`; `products.stock` chỉ giữ vai trò tồn tổng tương thích.
