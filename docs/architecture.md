@@ -123,9 +123,8 @@ Luồng gọi chuẩn:
 3. Trả DTO báo cáo JSON hoặc CSV export.
 4. Quyền truy cập: `ADMIN`, `MANAGER`.
 
-## Endpoint chính và endpoint legacy
+## Endpoint nghiệp vụ chính
 
-### Luồng chính nên dùng
 - `auth`
 - `products`
 - `branches`
@@ -136,14 +135,7 @@ Luồng gọi chuẩn:
 - `audit-logs`
 - `reports`
 
-### Luồng legacy còn tồn tại
-- `orders`
-- `payments`
-- `inventory`
-
-Ghi chú:
-- `orders`, `payments`, `inventory_adjustments` đang được đánh dấu legacy ở tài liệu.
-- Không nên mở rộng nghiệp vụ mới trên luồng này nếu frontend chuyển sang `sales/purchases/stock-movements`.
+Hệ thống đồ án chỉ dùng một luồng bán hàng chính qua `sales`.
 
 ## Xử lý lỗi và phản hồi API
 - Validation dùng Bean Validation trên DTO.
@@ -170,5 +162,5 @@ Ghi chú:
 - Bổ sung `GET by id` cho `branches`, `suppliers`, `purchases`, `sales`.
 - Bổ sung quản trị `users` và API hồ sơ người dùng hiện tại.
 - Bổ sung báo cáo lợi nhuận, tổng nhập, tổng bán, thẻ kho.
-- Quyết định dọn hoặc refactor hẳn luồng legacy `orders/payments/inventory`.
+- Duy trì một luồng bán hàng duy nhất: `sales` + `sale_items` + `stock_movements`.
 - Chuẩn hóa tồn kho đa chi nhánh nếu bài toán cần vận hành thật.

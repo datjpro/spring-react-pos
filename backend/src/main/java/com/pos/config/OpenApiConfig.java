@@ -62,9 +62,6 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
                 .group("operations")
                 .pathsToMatch(
-                        "/api/v1/orders/**",
-                        "/api/v1/payments/**",
-                        "/api/v1/inventory/**",
                         "/api/v1/stock-movements/**",
                         "/api/v1/purchases/**",
                         "/api/v1/sales/**"
