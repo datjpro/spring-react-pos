@@ -8,7 +8,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8081",
+      "value": "http://localhost:8080",
       "type": "string"
     },
     {
@@ -75,10 +75,10 @@
                 "login"
               ]
             },
-            "description": "Điều kiện: tài khoản admin tồn tại. Kết quả mong đợi: 200, có accessToken/refreshToken, tự lưu vào collection variable.",
+            "description": "Điều kiện: tài khoản admin tồn tại theo tài liệu API. Kết quả mong đợi: 200, có accessToken/refreshToken, tự lưu vào collection variable.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}\n",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"postgres\"\n}\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1349,6 +1349,65 @@
           ]
         },
         {
+          "name": "Xem tồn kho theo chi nhánh",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/stock-levels?branchId={{branchId}}&productId={{productId}}&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "stock-levels"
+              ],
+              "query": [
+                {
+                  "key": "branchId",
+                  "value": "{{branchId}}"
+                },
+                {
+                  "key": "productId",
+                  "value": "{{productId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Kết quả: 200, danh sách tồn kho sản phẩm theo chi nhánh.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lấy tồn kho theo chi nhánh thành công', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Điều chỉnh stock movement",
           "request": {
             "method": "POST",
@@ -1945,7 +2004,7 @@
       ]
     },
     {
-      "name": "10 - Quản trị người dùng",
+      "name": "09 - Quản trị người dùng",
       "description": "Quản trị người dùng: danh sách, hồ sơ hiện tại, tạo, cập nhật, khóa/mở.",
       "item": [
         {

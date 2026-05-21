@@ -22,16 +22,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class StockAdjustmentServiceImpl implements StockAdjustmentService {
     private final ProductRepository productRepository;
     private final BranchRepository branchRepository;
+    private final BranchProductStockService branchProductStockService;
     private final StockMovementService stockMovementService;
     private final AuditLogService auditLogService;
     private final UserContextService userContextService;
     private final BranchAccessGuard branchAccessService;
 
     public StockAdjustmentServiceImpl(ProductRepository productRepository, BranchRepository branchRepository,
-            StockMovementService stockMovementService, AuditLogService auditLogService,
+            BranchProductStockService branchProductStockService, StockMovementService stockMovementService,
+            AuditLogService auditLogService,
             UserContextService userContextService, BranchAccessGuard branchAccessService) {
         this.productRepository = productRepository;
         this.branchRepository = branchRepository;
+        this.branchProductStockService = branchProductStockService;
         this.stockMovementService = stockMovementService;
         this.auditLogService = auditLogService;
         this.userContextService = userContextService;
@@ -46,11 +49,7 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         BranchEntity branch = branchRepository.findByIdAndActiveTrue(request.branchId())
                 .orElseThrow(() -> new ResourceNotFoundException("Branch not found"));
-        int nextStock = product.getStock() + request.quantityDelta();
-        if (nextStock < 0)
-            throw new BadRequestException("Stock cannot be negative after adjustment");
-        product.setStock(nextStock);
-        productRepository.save(product);
+        int nextStock = branchProductStockService.adjustStock(product, branch, request.quantityDelta());
         MovementType movementType = request.quantityDelta() >= 0 ? MovementType.IN : MovementType.ADJUSTMENT;
         stockMovementService.record(product, branch, movementType, Math.abs(request.quantityDelta()),
                 "STOCK_ADJUSTMENT", product.getId(), request.note(), user.getUsername());

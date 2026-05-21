@@ -32,6 +32,8 @@ class ReportServiceImplTest {
     @Mock
     private ProductRepository productRepository;
     @Mock
+    private BranchProductStockRepository branchProductStockRepository;
+    @Mock
     private PurchaseRepository purchaseRepository;
     @Mock
     private StockMovementRepository stockMovementRepository;
@@ -73,10 +75,9 @@ class ReportServiceImplTest {
 
     @Test
     void shouldReturnInventorySummary() {
-        when(productRepository.summarizeInventoryTotals()).thenReturn(new Object[]{3L, 18L});
+        when(branchProductStockRepository.summarizeInventoryByBranchStock(10)).thenReturn(new Object[]{3L, 18L, 1L, 1L});
+        when(productRepository.count()).thenReturn(3L);
         when(productRepository.countByActiveTrue()).thenReturn(2L);
-        when(productRepository.countByActiveTrueAndStockLessThanEqual(10)).thenReturn(1L);
-        when(productRepository.countByActiveTrueAndStock(0)).thenReturn(1L);
 
         InventorySummaryResponse response = reportService.getInventorySummary();
 
@@ -86,10 +87,9 @@ class ReportServiceImplTest {
 
     @Test
     void shouldReturnInventorySummaryWhenRepositoryWrapsAggregateRow() {
-        when(productRepository.summarizeInventoryTotals()).thenReturn(new Object[]{new Object[]{3L, 18L}});
+        when(branchProductStockRepository.summarizeInventoryByBranchStock(10)).thenReturn(new Object[]{new Object[]{3L, 18L, 1L, 1L}});
+        when(productRepository.count()).thenReturn(3L);
         when(productRepository.countByActiveTrue()).thenReturn(2L);
-        when(productRepository.countByActiveTrueAndStockLessThanEqual(10)).thenReturn(1L);
-        when(productRepository.countByActiveTrueAndStock(0)).thenReturn(1L);
 
         InventorySummaryResponse response = reportService.getInventorySummary();
 

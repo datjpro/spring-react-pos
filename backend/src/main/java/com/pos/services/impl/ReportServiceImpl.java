@@ -4,6 +4,7 @@ import com.pos.common.enums.PurchaseStatus;
 import com.pos.common.exception.BadRequestException;
 import com.pos.dtos.response.*;
 import com.pos.entities.StockMovementEntity;
+import com.pos.repositories.BranchProductStockRepository;
 import com.pos.repositories.ProductRepository;
 import com.pos.repositories.PurchaseRepository;
 import com.pos.repositories.SaleItemRepository;
@@ -35,15 +36,18 @@ public class ReportServiceImpl implements ReportService {
 
     private final SaleItemRepository saleItemRepository;
     private final ProductRepository productRepository;
+    private final BranchProductStockRepository branchProductStockRepository;
     private final PurchaseRepository purchaseRepository;
     private final StockMovementRepository stockMovementRepository;
 
     public ReportServiceImpl(SaleItemRepository saleItemRepository,
                              ProductRepository productRepository,
+                             BranchProductStockRepository branchProductStockRepository,
                              PurchaseRepository purchaseRepository,
                              StockMovementRepository stockMovementRepository) {
         this.saleItemRepository = saleItemRepository;
         this.productRepository = productRepository;
+        this.branchProductStockRepository = branchProductStockRepository;
         this.purchaseRepository = purchaseRepository;
         this.stockMovementRepository = stockMovementRepository;
     }
@@ -94,13 +98,13 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public InventorySummaryResponse getInventorySummary() {
-        Object[] totals = firstRow(productRepository.summarizeInventoryTotals());
+        Object[] totals = firstRow(branchProductStockRepository.summarizeInventoryByBranchStock(DEFAULT_LOW_STOCK_THRESHOLD));
         return new InventorySummaryResponse(
-                toLong(totals[0]),
+                productRepository.count(),
                 productRepository.countByActiveTrue(),
                 toLong(totals[1]),
-                productRepository.countByActiveTrueAndStockLessThanEqual(DEFAULT_LOW_STOCK_THRESHOLD),
-                productRepository.countByActiveTrueAndStock(0));
+                toLong(totals[2]),
+                toLong(totals[3]));
     }
 
     @Override

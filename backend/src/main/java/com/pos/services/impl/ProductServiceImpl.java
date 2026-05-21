@@ -29,9 +29,11 @@ public class ProductServiceImpl implements ProductService {
     private static final List<String> ALLOWED_SORT_FIELDS = List.of("name", "price", "stock", "createdAt");
 
     private final ProductRepository productRepository;
+    private final BranchProductStockService branchProductStockService;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, BranchProductStockService branchProductStockService) {
         this.productRepository = productRepository;
+        this.branchProductStockService = branchProductStockService;
     }
 
     @Override
@@ -86,7 +88,7 @@ public class ProductServiceImpl implements ProductService {
         productEntity.setCategory(createProductRequest.category());
         productEntity.setPrice(createProductRequest.price());
         productEntity.setCost(createProductRequest.cost());
-        productEntity.setStock(createProductRequest.stock());
+        productEntity.setStock(0);
         productEntity.setUnit(createProductRequest.unit());
         productEntity.setBarcode(createProductRequest.barcode());
         productEntity.setDescription(createProductRequest.description());
@@ -94,6 +96,7 @@ public class ProductServiceImpl implements ProductService {
         productEntity.setActive(true);
 
         ProductEntity savedProduct = productRepository.save(productEntity);
+        branchProductStockService.syncTotalStockToDefaultBranch(savedProduct, createProductRequest.stock());
         return mapToProductResponse(savedProduct);
     }
 
@@ -111,7 +114,7 @@ public class ProductServiceImpl implements ProductService {
         productEntity.setCategory(updateProductRequest.category());
         productEntity.setPrice(updateProductRequest.price());
         productEntity.setCost(updateProductRequest.cost());
-        productEntity.setStock(updateProductRequest.stock());
+        int targetTotalStock = updateProductRequest.stock();
         productEntity.setUnit(updateProductRequest.unit());
         productEntity.setBarcode(updateProductRequest.barcode());
         productEntity.setDescription(updateProductRequest.description());
@@ -119,6 +122,7 @@ public class ProductServiceImpl implements ProductService {
         productEntity.setActive(updateProductRequest.active());
 
         ProductEntity savedProduct = productRepository.save(productEntity);
+        branchProductStockService.syncTotalStockToDefaultBranch(savedProduct, targetTotalStock);
         return mapToProductResponse(savedProduct);
     }
 

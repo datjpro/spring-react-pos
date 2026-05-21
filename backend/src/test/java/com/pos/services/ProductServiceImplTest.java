@@ -37,6 +37,8 @@ class ProductServiceImplTest {
 
     @Mock
     private ProductRepository productRepository;
+    @Mock
+    private BranchProductStockService branchProductStockService;
 
     @InjectMocks
     private ProductServiceImpl productService;

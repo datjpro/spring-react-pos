@@ -319,6 +319,29 @@ Query params thường dùng:
 - `productId`: lọc theo sản phẩm
 - `branchId`: lọc theo chi nhánh
 
+### `GET /api/v1/stock-levels`
+Lấy tồn kho theo từng sản phẩm tại từng chi nhánh.
+
+Quyền: `ADMIN`, `MANAGER`, `STAFF`.
+
+Query params:
+- `branchId`: tùy chọn (bắt buộc đúng branch scope với `MANAGER`/`STAFF`)
+- `productId`: tùy chọn
+- `page`: mặc định `0`
+- `size`: mặc định `20`, tối đa `100`
+
+Response item:
+```json
+{
+  "productId": 1,
+  "productName": "Cà phê sữa",
+  "sku": "OW-SM-BLU-L",
+  "branchId": 1,
+  "branchName": "Chi nhánh trung tâm",
+  "stock": 25
+}
+```
+
 ### `POST /api/v1/stock-movements/adjustments`
 Điều chỉnh tồn kho theo luồng chính.
 
@@ -477,7 +500,7 @@ Request body:
 File Postman collection: `docs/postman/pos-system-endpoints.postman_collection.json`.
 
 Cách dùng:
-1. Start backend tại `http://localhost:8081`.
+1. Start backend tại `http://localhost:8080`.
 2. Import collection vào Postman.
 3. Chạy request `Đăng nhập admin` trước.
 4. Chạy folder theo thứ tự từ `00` đến `09`.

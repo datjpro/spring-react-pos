@@ -3,8 +3,10 @@ package com.pos.repositories;
 import com.pos.entities.ProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +15,10 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long>, J
     boolean existsBySkuIgnoreCase(String sku);
 
     Optional<ProductEntity> findByIdAndActiveTrue(Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select product from ProductEntity product where product.id = :id and product.active = true")
+    Optional<ProductEntity> findByIdAndActiveTrueForUpdate(Long id);
 
     List<ProductEntity> findByActiveTrueAndStockLessThanEqualOrderByStockAsc(Integer threshold);
 
