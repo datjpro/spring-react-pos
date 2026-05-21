@@ -1,14 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Banknote, CreditCard, FileUp, Minus, Plus, ReceiptText, ScanBarcode, Search, ShoppingCart, Trash2 } from 'lucide-react'
-import { createOrder, createPayment } from '../services/transactions'
-import { getProducts } from '../services/products'
-import type { Product } from '../types/product'
-import { getApiErrorMessage } from '../utils/apiError'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { CreditCard, FileUp, Minus, Plus, ScanBarcode, ShoppingCart, Trash2 } from 'lucide-react'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
+import { useI18n } from '../i18n'
+import { getStockLevels } from '../services/inventory'
+import { getProducts } from '../services/products'
+import { createSale } from '../services/transactions'
+import { useAuth } from '../store/auth'
+import type { StockLevel } from '../types/inventory'
+import type { Product } from '../types/product'
+import { getApiErrorMessage } from '../utils/apiError'
 import { findProductByBarcode, readBarcodeFromFile } from '../utils/barcode'
+import { hasMinimumRole } from '../utils/roles'
+
+type CartItem = Product & { quantity: number; branchStock: number }
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('vi-VN', {
@@ -18,121 +25,131 @@ function formatCurrency(value: number) {
   }).format(value)
 }
 
-type CartItem = Product & { quantity: number }
-type PaymentMethod = 'CASH' | 'CARD' | 'TRANSFER'
-
-const quickAmounts = [50000, 100000, 200000, 500000]
-const POS_CART_STORAGE_KEY = 'pos_cart_draft_v1'
-
-interface PersistedCartItem {
-  productId: number
-  quantity: number
-}
-
 export function PosPage() {
-  const [products, setProducts] = useState<Product[]>([])
+  const { t, language } = useI18n()
+  const { me } = useAuth()
+  const tr = (vi: string, en: string) => (language === 'vi' ? vi : en)
+  const canChooseBranch = hasMinimumRole(me?.role, 'ADMIN')
+
+  const [allProducts, setAllProducts] = useState<Product[]>([])
+  const [stockRows, setStockRows] = useState<StockLevel[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
+  const [branchId, setBranchId] = useState<number>(me?.branchId ?? 1)
   const [search, setSearch] = useState('')
   const [scanValue, setScanValue] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH')
-  const [amountReceived, setAmountReceived] = useState('')
+  const [note, setNote] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
-  const scanInputRef = useRef<HTMLInputElement | null>(null)
-  const restoredCartRef = useRef(false)
+  const [messageSuccess, setMessageSuccess] = useState(false)
 
   useEffect(() => {
-    getProducts({ size: 24 })
-      .then((data) => setProducts(data.content))
-      .catch((error) => setMessage(getApiErrorMessage(error)))
-      .finally(() => setLoading(false))
-  }, [])
-
-  useEffect(() => {
-    scanInputRef.current?.focus()
-  }, [])
-
-  useEffect(() => {
-    if (restoredCartRef.current || products.length === 0) return
-
-    restoredCartRef.current = true
-
-    const raw = localStorage.getItem(POS_CART_STORAGE_KEY)
-    if (!raw) return
-
-    try {
-      const persisted: PersistedCartItem[] = JSON.parse(raw)
-      const restored = persisted
-        .map((item) => {
-          const product = products.find((entry) => entry.id === item.productId)
-          if (!product || !product.active || product.stock <= 0) return null
-
-          return {
-            ...product,
-            quantity: Math.max(1, Math.min(item.quantity, product.stock)),
-          }
-        })
-        .filter((item): item is CartItem => item !== null)
-
-      if (restored.length > 0) {
-        setCart(restored)
-        setMessage(`Đã khôi phục ${restored.length} món từ giỏ tạm.`)
-      }
-    } catch {
-      localStorage.removeItem(POS_CART_STORAGE_KEY)
+    if (me?.branchId && !canChooseBranch) {
+      setBranchId(me.branchId)
     }
-  }, [products])
+  }, [canChooseBranch, me?.branchId])
 
   useEffect(() => {
-    if (cart.length === 0) {
-      localStorage.removeItem(POS_CART_STORAGE_KEY)
-      return
-    }
+    if (!branchId) return
+    void loadProductsAndStock(branchId)
+  }, [branchId])
 
-    const payload: PersistedCartItem[] = cart.map((item) => ({
-      productId: item.id,
-      quantity: item.quantity,
-    }))
+  const stockByProduct = useMemo(() => Object.fromEntries(stockRows.map((item) => [item.productId, item.stock])), [stockRows])
 
-    localStorage.setItem(POS_CART_STORAGE_KEY, JSON.stringify(payload))
-  }, [cart])
+  const saleableProducts = useMemo(
+    () =>
+      allProducts
+        .filter((product) => product.active && (stockByProduct[product.id] ?? 0) > 0)
+        .sort((first, second) => first.name.localeCompare(second.name)),
+    [allProducts, stockByProduct],
+  )
 
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase()
-    if (!keyword) return products
+    if (!keyword) return saleableProducts
+    return saleableProducts.filter((product) => [product.name, product.sku, product.barcode ?? '', product.category ?? ''].some((value) => value.toLowerCase().includes(keyword)))
+  }, [saleableProducts, search])
 
-    return products.filter((product) => {
-      const fields = [product.name, product.sku, product.barcode ?? '', product.category ?? '']
-      return fields.some((field) => field.toLowerCase().includes(keyword))
-    })
-  }, [products, search])
+  const branchName = stockRows[0]?.branchName ?? me?.branchName ?? `#${branchId}`
+  const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+  const subtotal = cart.reduce((sum, item) => sum + item.quantity * item.price, 0)
 
-  const subtotal = useMemo(() => cart.reduce((total, item) => total + item.price * item.quantity, 0), [cart])
-  const paidAmount = Number(amountReceived || 0)
-  const changeAmount = Math.max(paidAmount - subtotal, 0)
-  const itemCount = cart.reduce((total, item) => total + item.quantity, 0)
+  async function loadAllProducts() {
+    const collected: Product[] = []
+    let currentPage = 0
+    let totalPages = 1
+
+    while (currentPage < totalPages) {
+      const pageData = await getProducts({ page: currentPage, size: 100 })
+      collected.push(...pageData.content)
+      totalPages = pageData.totalPages
+      currentPage += 1
+    }
+
+    return collected
+  }
+
+  async function loadAllStockLevels(currentBranchId: number) {
+    const collected: StockLevel[] = []
+    let currentPage = 0
+    let totalPages = 1
+
+    while (currentPage < totalPages) {
+      const pageData = await getStockLevels({ branchId: currentBranchId, page: currentPage, size: 100 })
+      collected.push(...pageData.content)
+      totalPages = pageData.totalPages
+      currentPage += 1
+    }
+
+    return collected
+  }
+
+  async function loadProductsAndStock(currentBranchId: number) {
+    setLoading(true)
+    setMessage(null)
+    try {
+      const [productsData, stockData] = await Promise.all([loadAllProducts(), loadAllStockLevels(currentBranchId)])
+      setAllProducts(productsData)
+      setStockRows(stockData)
+      setCart([])
+    } catch (error) {
+      const apiMessage = getApiErrorMessage(error)
+      const branchHint = apiMessage.toLowerCase().includes('forbidden')
+        ? tr('Tài khoản này chỉ được xem chi nhánh của mình. Hãy dùng đúng branch được gán.', 'This account can only access its own branch. Use assigned branch.')
+        : apiMessage
+      setMessageSuccess(false)
+      setMessage(branchHint)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   function addToCart(product: Product) {
-    if (!product.active || product.stock <= 0) return
+    const maxStock = stockByProduct[product.id] ?? 0
+    if (maxStock <= 0) return
 
     setCart((current) => {
-      const existing = current.find((item) => item.id === product.id)
-      if (existing) {
-        const nextQuantity = Math.min(existing.quantity + 1, product.stock)
-        return current.map((item) => (item.id === product.id ? { ...item, quantity: nextQuantity } : item))
-      }
+      const index = current.findIndex((item) => item.id === product.id)
+      if (index === -1) return [...current, { ...product, quantity: 1, branchStock: maxStock }]
 
-      return [...current, { ...product, quantity: 1 }]
+      const next = [...current]
+      const found = next[index]
+      if (found.quantity >= maxStock) return next
+      next[index] = { ...found, quantity: found.quantity + 1 }
+      return next
     })
   }
 
-  function updateQuantity(productId: number, quantity: number) {
+  function increaseQuantity(productId: number) {
+    setCart((current) => current.map((item) => (item.id === productId && item.quantity < item.branchStock ? { ...item, quantity: item.quantity + 1 } : item)))
+  }
+
+  function decreaseQuantity(productId: number) {
     setCart((current) =>
       current.flatMap((item) => {
         if (item.id !== productId) return item
-        if (quantity <= 0) return []
-        return { ...item, quantity: Math.min(quantity, item.stock) }
+        if (item.quantity <= 1) return []
+        return { ...item, quantity: item.quantity - 1 }
       }),
     )
   }
@@ -141,72 +158,58 @@ export function PosPage() {
     setCart((current) => current.filter((item) => item.id !== productId))
   }
 
-  function clearCartDraft() {
-    setCart([])
-    localStorage.removeItem(POS_CART_STORAGE_KEY)
-    setMessage('Đã xóa giỏ tạm trên trình duyệt.')
-  }
-
-  function scanBarcodeIntoCart(rawBarcode: string) {
+  function fillByBarcode(rawBarcode: string) {
     const barcode = rawBarcode.trim()
     if (!barcode) return
 
-    const product = findProductByBarcode(products, barcode)
+    const product = findProductByBarcode(saleableProducts, barcode)
     if (!product) {
-      setMessage(`Không tìm thấy barcode ${barcode}`)
+      setMessageSuccess(false)
+      setMessage(tr(`Không tìm thấy barcode còn hàng: ${barcode}`, `No in-stock barcode found: ${barcode}`))
       return
     }
 
     addToCart(product)
-    setMessage(`Đã thêm ${product.name} từ barcode`)
     setScanValue('')
+    setMessageSuccess(true)
+    setMessage(tr(`Đã thêm ${product.name} vào giỏ.`, `Added ${product.name} to cart.`))
   }
 
   async function importBarcodeFile(file: File | null) {
     if (!file) return
-    setMessage(null)
-
     try {
       const barcode = await readBarcodeFromFile(file)
       setScanValue(barcode)
-      scanBarcodeIntoCart(barcode)
+      fillByBarcode(barcode)
     } catch (error) {
+      setMessageSuccess(false)
       setMessage(getApiErrorMessage(error))
     }
   }
 
-  async function checkout() {
+  async function checkout(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     if (cart.length === 0) {
-      setMessage('Giỏ hàng đang trống.')
-      return
-    }
-
-    if (paymentMethod === 'CASH' && paidAmount < subtotal) {
-      setMessage('Tiền khách đưa chưa đủ.')
+      setMessageSuccess(false)
+      setMessage(tr('Giỏ hàng đang trống.', 'Cart is empty.'))
       return
     }
 
     setSubmitting(true)
     setMessage(null)
-
     try {
-      const order = await createOrder({
-        discountAmount: 0,
+      const sale = await createSale({
+        branchId,
+        note: note.trim() || undefined,
         items: cart.map((item) => ({ productId: item.id, quantity: item.quantity })),
       })
-
-      await createPayment({
-        orderId: order.id,
-        paymentMethod,
-        amountReceived: paymentMethod === 'CASH' ? paidAmount : order.totalAmount,
-        note: 'POS checkout',
-      })
-
       setCart([])
-      setAmountReceived('')
-      localStorage.removeItem(POS_CART_STORAGE_KEY)
-      setMessage(`Đã thanh toán đơn ${order.orderCode}`)
+      setNote('')
+      setMessageSuccess(true)
+      setMessage(tr(`Đã tạo hóa đơn bán ${sale.saleCode}.`, `Created sales invoice ${sale.saleCode}.`))
+      await loadProductsAndStock(branchId)
     } catch (error) {
+      setMessageSuccess(false)
       setMessage(getApiErrorMessage(error))
     } finally {
       setSubmitting(false)
@@ -217,168 +220,165 @@ export function PosPage() {
     <section className="page-stack pos-workspace">
       <header className="page-header pos-hero">
         <div>
-          <p className="page-header__eyebrow">POS Counter</p>
-          <h2 className="page-header__title">Bán hàng tại quầy</h2>
-          <p className="page-header__description">Chọn sản phẩm, kiểm tra tồn kho, nhận tiền và tạo hóa đơn trong một màn hình.</p>
+          <p className="page-header__eyebrow">POS</p>
+          <h2 className="page-header__title">{t('pos.title')}</h2>
+          <p className="page-header__description">{t('pos.description')}</p>
+          <p className="page-header__description">{tr('Chi nhánh đang bán', 'Current branch')}: <strong>{branchName}</strong></p>
         </div>
         <div className="pos-hero__metrics">
-          <Badge tone="info"><ShoppingCart size={14} /> {itemCount} món</Badge>
-          <Badge tone="success"><Banknote size={14} /> {formatCurrency(subtotal)}</Badge>
+          <Badge tone="info">
+            <ShoppingCart size={14} /> {itemCount} {tr('món', 'items')}
+          </Badge>
+          <Badge tone="success">{formatCurrency(subtotal)}</Badge>
         </div>
       </header>
 
-      {message ? <p className={message.includes('Đã thanh toán') ? 'page-state page-state--success' : 'page-state page-state--error'}>{message}</p> : null}
+      {message ? <p className={messageSuccess ? 'page-state page-state--success' : 'page-state page-state--error'}>{message}</p> : null}
 
       <div className="pos-grid pos-grid--checkout">
         <Card className="pos-products-card">
           <CardHeader>
             <div>
-              <p className="panel__eyebrow">Sản phẩm</p>
-              <h3>Chạm để thêm vào giỏ</h3>
+              <p className="panel__eyebrow">{tr('Sản phẩm', 'Products')}</p>
+              <h3>{t('pos.addToCart')}</h3>
             </div>
-            <Badge tone="neutral">{filteredProducts.length}/{products.length}</Badge>
+            <Badge tone="neutral">
+              {filteredProducts.length}/{saleableProducts.length}
+            </Badge>
           </CardHeader>
-
           <CardContent>
-            <label className="pos-search">
-              <Search size={16} />
-              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm tên, SKU, barcode..." />
-            </label>
+            <div className="form-grid form-grid--two">
+              <label className="field">
+                <span>{t('pos.branch')}</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={branchId}
+                  disabled={!canChooseBranch}
+                  onChange={(event) => {
+                    if (!canChooseBranch) return
+                    const value = Number(event.target.value)
+                    setBranchId(value > 0 ? value : 1)
+                  }}
+                />
+              </label>
+              <label className="field">
+                <span>{tr('Tìm kiếm', 'Search')}</span>
+                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={tr('Tìm tên, SKU, barcode...', 'Search name, SKU, barcode...')} />
+              </label>
+            </div>
+
+            {!canChooseBranch ? <p className="page-state">{tr('Tài khoản này chỉ thao tác trên chi nhánh được gán.', 'This account only works on its assigned branch.')}</p> : null}
 
             <div className="barcode-scan-row">
               <label className="field barcode-scan-row__input">
-                <span>Quét barcode (scanner)</span>
+                <span>Barcode</span>
                 <Input
-                  ref={scanInputRef}
                   value={scanValue}
                   onChange={(event) => setScanValue(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') {
                       event.preventDefault()
-                      scanBarcodeIntoCart(scanValue)
+                      fillByBarcode(scanValue)
                     }
                   }}
-                  placeholder="Focus ở đây rồi quét mã..."
+                  placeholder={tr('Quét scanner để thêm nhanh', 'Scan to add quickly')}
                 />
               </label>
-              <Button type="button" variant="secondary" onClick={() => scanBarcodeIntoCart(scanValue)}><ScanBarcode size={16} /> Quét</Button>
+              <Button type="button" variant="secondary" onClick={() => fillByBarcode(scanValue)}>
+                <ScanBarcode size={16} /> {tr('Quét', 'Scan')}
+              </Button>
               <label className="ui-button ui-button--ghost ui-button--md ui-input--file-btn">
-                <FileUp size={16} /> Import ảnh mã
+                <FileUp size={16} />
+                {tr('Import ảnh mã', 'Import barcode image')}
                 <input type="file" accept="image/*" className="ui-input--file-hidden" onChange={(event) => void importBarcodeFile(event.target.files?.[0] ?? null)} />
               </label>
             </div>
 
-            {loading ? <p className="page-state">Đang tải sản phẩm...</p> : null}
-            {!loading && filteredProducts.length === 0 ? <p className="page-state">Không tìm thấy sản phẩm phù hợp.</p> : null}
-
-            <div className="product-grid product-grid--pos">
-              {filteredProducts.map((product) => {
-                const disabled = !product.active || product.stock <= 0
-                return (
-                  <button key={product.id} type="button" className="product-tile product-tile--pos" onClick={() => addToCart(product)} disabled={disabled}>
-                    <div className="product-tile__topline">
-                      <Badge tone={product.stock > 0 ? 'success' : 'danger'}>{product.stock} {product.unit}</Badge>
-                      {product.barcode ? <span>{product.barcode}</span> : null}
-                    </div>
-                    <div>
-                      <h3>{product.name}</h3>
-                      <p>{product.sku} · {product.category ?? 'Chưa phân loại'}</p>
-                    </div>
-                    <strong>{formatCurrency(product.price)}</strong>
+            {loading ? (
+              <p className="page-state">{tr('Đang tải sản phẩm còn hàng...', 'Loading in-stock products...')}</p>
+            ) : filteredProducts.length === 0 ? (
+              <p className="page-state">{tr('Chi nhánh này hiện không có sản phẩm còn tồn để bán.', 'This branch currently has no saleable stock.')}</p>
+            ) : (
+              <div className="product-grid">
+                {filteredProducts.map((product) => (
+                  <button key={product.id} type="button" className="product-card" onClick={() => addToCart(product)}>
+                    <strong>{product.name}</strong>
+                    <span>{product.sku}</span>
+                    <span>{formatCurrency(product.price)}</span>
+                    <Badge tone="info">{tr('Tồn chi nhánh', 'Branch stock')}: {stockByProduct[product.id] ?? 0}</Badge>
                   </button>
-                )
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <aside className="pos-checkout-stack">
-          <Card className="cart-panel">
+        <aside className="pos-sidebar">
+          <Card>
             <CardHeader>
               <div>
-                <p className="panel__eyebrow">Giỏ hàng</p>
-                <h3>Hóa đơn hiện tại</h3>
+                <p className="panel__eyebrow">{tr('Giỏ hàng', 'Cart')}</p>
+                <h3>{tr('Chi tiết đơn', 'Order details')}</h3>
               </div>
-              <div className="cart-header-actions">
-                <ReceiptText size={20} />
-                <Button type="button" size="sm" variant="ghost" onClick={clearCartDraft} disabled={cart.length === 0}>Xóa giỏ</Button>
-              </div>
+              <ShoppingCart size={20} />
             </CardHeader>
-
             <CardContent>
-              <div className="cart-list cart-list--pos">
-                {cart.length === 0 ? <p className="page-state">Chưa chọn sản phẩm.</p> : null}
-                {cart.map((item) => (
-                  <div key={item.id} className="cart-row cart-row--pos">
-                    <div>
-                      <strong>{item.name}</strong>
-                      <p>{formatCurrency(item.price)} · Tồn {item.stock}</p>
-                    </div>
-                    <div className="quantity-stepper">
-                      <Button type="button" variant="ghost" size="icon" onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label={`Giảm ${item.name}`}>
-                        <Minus size={14} />
-                      </Button>
-                      <span>{item.quantity}</span>
-                      <Button type="button" variant="ghost" size="icon" onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label={`Tăng ${item.name}`}>
-                        <Plus size={14} />
-                      </Button>
-                      <Button type="button" variant="danger" size="icon" onClick={() => removeFromCart(item.id)} aria-label={`Xóa ${item.name}`}>
-                        <Trash2 size={14} />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {cart.length === 0 ? (
+                <p className="page-state">{t('pos.emptyCart')}</p>
+              ) : (
+                <div className="list-stack">
+                  {cart.map((item) => (
+                    <article key={item.id} className="cart-item">
+                      <div>
+                        <strong>{item.name}</strong>
+                        <p>{formatCurrency(item.price)}</p>
+                        <small>{tr('Tồn chi nhánh', 'Branch stock')}: {item.branchStock}</small>
+                      </div>
+                      <div className="cart-item__actions">
+                        <Button type="button" size="sm" variant="ghost" onClick={() => decreaseQuantity(item.id)}>
+                          <Minus size={14} />
+                        </Button>
+                        <span>{item.quantity}</span>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => increaseQuantity(item.id)} disabled={item.quantity >= item.branchStock}>
+                          <Plus size={14} />
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => removeFromCart(item.id)}>
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <div>
-                <p className="panel__eyebrow">Thanh toán</p>
-                <h3>Tổng kết</h3>
+                <p className="panel__eyebrow">{tr('Thanh toán', 'Checkout')}</p>
+                <h3>{tr('Tạo phiếu bán', 'Create sale')}</h3>
               </div>
               <CreditCard size={20} />
             </CardHeader>
             <CardContent>
-              <div className="summary-block summary-block--pos">
-                <div className="summary-block__row"><span>Tạm tính</span><strong>{formatCurrency(subtotal)}</strong></div>
-                <div className="summary-block__row"><span>Giảm giá</span><strong>{formatCurrency(0)}</strong></div>
-                <div className="summary-block__row summary-block__row--total"><span>Phải thu</span><strong>{formatCurrency(subtotal)}</strong></div>
-              </div>
-
-              <div className="payment-methods" role="group" aria-label="Chọn phương thức thanh toán">
-                {(['CASH', 'CARD', 'TRANSFER'] as PaymentMethod[]).map((method) => (
-                  <Button key={method} type="button" variant={paymentMethod === method ? 'primary' : 'secondary'} onClick={() => setPaymentMethod(method)}>
-                    {method}
-                  </Button>
-                ))}
-              </div>
-
-              {paymentMethod === 'CASH' ? (
-                <div className="cash-box">
-                  <Input value={amountReceived} onChange={(event) => setAmountReceived(event.target.value)} inputMode="numeric" placeholder="Tiền khách đưa" />
-                  <div className="quick-cash">
-                    {quickAmounts.map((amount) => (
-                      <Button key={amount} type="button" variant="ghost" size="sm" onClick={() => setAmountReceived(String(amount))}>
-                        {formatCurrency(amount)}
-                      </Button>
-                    ))}
+              <form className="form-grid" onSubmit={checkout}>
+                <label className="field">
+                  <span>{t('pos.note')}</span>
+                  <Input value={note} onChange={(event) => setNote(event.target.value)} placeholder={tr('VD: Bán tại quầy ca sáng', 'Example: Morning counter sale')} />
+                </label>
+                <div className="summary-block summary-block--pos">
+                  <div className="summary-block__row">
+                    <span>{tr('Tổng cộng', 'Total')}</span>
+                    <strong>{formatCurrency(subtotal)}</strong>
                   </div>
-                  <div className="summary-block__row"><span>Tiền thối</span><strong>{formatCurrency(changeAmount)}</strong></div>
                 </div>
-              ) : null}
-
-              <div className="actions-column">
-                <Button type="button" variant="secondary">
-                  <ScanBarcode size={16} />
-                  Quét barcode
-                </Button>
-                <Button type="button" full onClick={checkout} disabled={submitting || cart.length === 0}>
+                <Button type="submit" full disabled={submitting || cart.length === 0}>
                   <CreditCard size={16} />
-                  {submitting ? 'Đang xử lý...' : 'Thanh toán'}
+                  {submitting ? tr('Đang tạo...', 'Creating...') : t('pos.checkout')}
                 </Button>
-              </div>
+              </form>
             </CardContent>
           </Card>
         </aside>

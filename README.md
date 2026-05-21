@@ -7,8 +7,8 @@ Dự án POS dùng **Spring Boot** cho backend và **React + Vite** cho frontend
 - `frontend/`: giao diện quản trị
 - `docs/`: tài liệu API, database, kiến trúc
 
-## Phạm vi nghiệp vụ chính
-- Bán hàng POS tại quầy qua `sales`
+## Luồng nghiệp vụ chính
+- Bán hàng tại quầy qua `sales` (không dùng luồng legacy `orders/payments`)
 - Nhập hàng từ nhà cung cấp qua `purchases`
 - Quản lý tồn kho đa chi nhánh qua `branch_product_stocks`
 - Điều chỉnh kho qua `stock-movements/adjustments`
@@ -24,7 +24,7 @@ Dự án POS dùng **Spring Boot** cho backend và **React + Vite** cho frontend
 ## Swagger / OpenAPI
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
-- Các group chính: `auth`, `users`, `catalog`, `operations`, `reporting`
+- Nhóm chính: `auth`, `users`, `catalog`, `operations`, `reporting`
 
 ## Chạy frontend
 1. Cài dependency:
@@ -36,11 +36,16 @@ Dự án POS dùng **Spring Boot** cho backend và **React + Vite** cho frontend
 4. API base mặc định FE:
    - `http://localhost:8080/api/v1`
 
-## FE bootstrap đã có
-- Auth shell: login, lưu token, auto load `me`, logout, route guard
-- Dashboard shell: gọi `reports/revenue` + `products` để hiện overview
-- Products shell: list + search + loading/error states
-- Route nghiệp vụ chính: `pos`, `products`, `purchases`, `sales`, `reports`, `users`
+## FE main flow sau refactor
+- Dashboard: doanh thu + số hóa đơn bán + quick links chính
+- Products: danh sách, tìm kiếm, tồn tổng theo `products.stock`
+- Purchases/Sales: tạo và xem giao dịch nhập/bán
+- POS: tạo phiếu bán trực tiếp qua `POST /sales`
+- Inventory:
+  - Tồn theo chi nhánh từ `GET /stock-levels`
+  - Biến động kho từ `GET /stock-movements`
+  - Điều chỉnh kho qua `POST /stock-movements/adjustments`
+- Reports, Users, System/Auth Tools: giữ theo API hiện tại
 
 ## E2E nghiệp vụ POS
 - Script chính: `backend/scripts/run-business-e2e-report.ps1`
