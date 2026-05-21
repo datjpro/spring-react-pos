@@ -8,9 +8,12 @@ import { useI18n } from '../i18n'
 import { getStockLevels } from '../services/inventory'
 import { getProducts } from '../services/products'
 import { createSale } from '../services/transactions'
+import { useAuth } from '../store/auth'
+import type { StockLevel } from '../types/inventory'
 import type { Product } from '../types/product'
 import { getApiErrorMessage } from '../utils/apiError'
 import { findProductByBarcode, readBarcodeFromFile } from '../utils/barcode'
+import { hasMinimumRole } from '../utils/roles'
 
 type CartItem = Product & { quantity: number; branchStock: number }
 
@@ -24,12 +27,14 @@ function formatCurrency(value: number) {
 
 export function PosPage() {
   const { t, language } = useI18n()
+  const { me } = useAuth()
   const tr = (vi: string, en: string) => (language === 'vi' ? vi : en)
+  const canChooseBranch = hasMinimumRole(me?.role, 'ADMIN')
 
   const [allProducts, setAllProducts] = useState<Product[]>([])
-  const [stockByProduct, setStockByProduct] = useState<Record<number, number>>({})
+  const [stockRows, setStockRows] = useState<StockLevel[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
-  const [branchId, setBranchId] = useState(1)
+  const [branchId, setBranchId] = useState<number>(me?.branchId ?? 1)
   const [search, setSearch] = useState('')
   const [scanValue, setScanValue] = useState('')
   const [note, setNote] = useState('')
@@ -39,11 +44,23 @@ export function PosPage() {
   const [messageSuccess, setMessageSuccess] = useState(false)
 
   useEffect(() => {
+    if (me?.branchId && !canChooseBranch) {
+      setBranchId(me.branchId)
+    }
+  }, [canChooseBranch, me?.branchId])
+
+  useEffect(() => {
+    if (!branchId) return
     void loadProductsAndStock(branchId)
   }, [branchId])
 
+  const stockByProduct = useMemo(() => Object.fromEntries(stockRows.map((item) => [item.productId, item.stock])), [stockRows])
+
   const saleableProducts = useMemo(
-    () => allProducts.filter((product) => product.active && (stockByProduct[product.id] ?? 0) > 0),
+    () =>
+      allProducts
+        .filter((product) => product.active && (stockByProduct[product.id] ?? 0) > 0)
+        .sort((first, second) => first.name.localeCompare(second.name)),
     [allProducts, stockByProduct],
   )
 
@@ -53,31 +70,55 @@ export function PosPage() {
     return saleableProducts.filter((product) => [product.name, product.sku, product.barcode ?? '', product.category ?? ''].some((value) => value.toLowerCase().includes(keyword)))
   }, [saleableProducts, search])
 
+  const branchName = stockRows[0]?.branchName ?? me?.branchName ?? `#${branchId}`
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
   const subtotal = cart.reduce((sum, item) => sum + item.quantity * item.price, 0)
+
+  async function loadAllProducts() {
+    const collected: Product[] = []
+    let currentPage = 0
+    let totalPages = 1
+
+    while (currentPage < totalPages) {
+      const pageData = await getProducts({ page: currentPage, size: 100 })
+      collected.push(...pageData.content)
+      totalPages = pageData.totalPages
+      currentPage += 1
+    }
+
+    return collected
+  }
+
+  async function loadAllStockLevels(currentBranchId: number) {
+    const collected: StockLevel[] = []
+    let currentPage = 0
+    let totalPages = 1
+
+    while (currentPage < totalPages) {
+      const pageData = await getStockLevels({ branchId: currentBranchId, page: currentPage, size: 100 })
+      collected.push(...pageData.content)
+      totalPages = pageData.totalPages
+      currentPage += 1
+    }
+
+    return collected
+  }
 
   async function loadProductsAndStock(currentBranchId: number) {
     setLoading(true)
     setMessage(null)
     try {
-      const [productsData, stockPage] = await Promise.all([
-        getProducts({ page: 0, size: 100 }),
-        getStockLevels({ branchId: currentBranchId, page: 0, size: 100 }),
-      ])
-
-      const stockMap: Record<number, number> = {}
-      for (const item of stockPage.content) stockMap[item.productId] = item.stock
-
-      setAllProducts(productsData.content)
-      setStockByProduct(stockMap)
+      const [productsData, stockData] = await Promise.all([loadAllProducts(), loadAllStockLevels(currentBranchId)])
+      setAllProducts(productsData)
+      setStockRows(stockData)
       setCart([])
     } catch (error) {
       const apiMessage = getApiErrorMessage(error)
-      const notFoundHint = apiMessage.includes('No static resource api/v1/stock-levels')
-        ? tr('Backend chưa bật endpoint stock-levels. Kiểm tra BE đang chạy đúng branch/migration.', 'Backend missing stock-levels endpoint. Check running BE branch/migration.')
+      const branchHint = apiMessage.toLowerCase().includes('forbidden')
+        ? tr('Tài khoản này chỉ được xem chi nhánh của mình. Hãy dùng đúng branch được gán.', 'This account can only access its own branch. Use assigned branch.')
         : apiMessage
       setMessageSuccess(false)
-      setMessage(notFoundHint)
+      setMessage(branchHint)
     } finally {
       setLoading(false)
     }
@@ -100,13 +141,7 @@ export function PosPage() {
   }
 
   function increaseQuantity(productId: number) {
-    setCart((current) =>
-      current.map((item) => {
-        if (item.id !== productId) return item
-        if (item.quantity >= item.branchStock) return item
-        return { ...item, quantity: item.quantity + 1 }
-      }),
-    )
+    setCart((current) => current.map((item) => (item.id === productId && item.quantity < item.branchStock ? { ...item, quantity: item.quantity + 1 } : item)))
   }
 
   function decreaseQuantity(productId: number) {
@@ -130,7 +165,7 @@ export function PosPage() {
     const product = findProductByBarcode(saleableProducts, barcode)
     if (!product) {
       setMessageSuccess(false)
-      setMessage(tr(`Không tìm thấy barcode có tồn kho: ${barcode}`, `No saleable barcode found: ${barcode}`))
+      setMessage(tr(`Không tìm thấy barcode còn hàng: ${barcode}`, `No in-stock barcode found: ${barcode}`))
       return
     }
 
@@ -188,6 +223,7 @@ export function PosPage() {
           <p className="page-header__eyebrow">POS</p>
           <h2 className="page-header__title">{t('pos.title')}</h2>
           <p className="page-header__description">{t('pos.description')}</p>
+          <p className="page-header__description">{tr('Chi nhánh đang bán', 'Current branch')}: <strong>{branchName}</strong></p>
         </div>
         <div className="pos-hero__metrics">
           <Badge tone="info">
@@ -218,7 +254,9 @@ export function PosPage() {
                   type="number"
                   min={1}
                   value={branchId}
+                  disabled={!canChooseBranch}
                   onChange={(event) => {
+                    if (!canChooseBranch) return
                     const value = Number(event.target.value)
                     setBranchId(value > 0 ? value : 1)
                   }}
@@ -229,6 +267,8 @@ export function PosPage() {
                 <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={tr('Tìm tên, SKU, barcode...', 'Search name, SKU, barcode...')} />
               </label>
             </div>
+
+            {!canChooseBranch ? <p className="page-state">{tr('Tài khoản này chỉ thao tác trên chi nhánh được gán.', 'This account only works on its assigned branch.')}</p> : null}
 
             <div className="barcode-scan-row">
               <label className="field barcode-scan-row__input">
@@ -256,7 +296,9 @@ export function PosPage() {
             </div>
 
             {loading ? (
-              <p className="page-state">{tr('Đang tải sản phẩm tồn kho...', 'Loading in-stock products...')}</p>
+              <p className="page-state">{tr('Đang tải sản phẩm còn hàng...', 'Loading in-stock products...')}</p>
+            ) : filteredProducts.length === 0 ? (
+              <p className="page-state">{tr('Chi nhánh này hiện không có sản phẩm còn tồn để bán.', 'This branch currently has no saleable stock.')}</p>
             ) : (
               <div className="product-grid">
                 {filteredProducts.map((product) => (
@@ -264,7 +306,7 @@ export function PosPage() {
                     <strong>{product.name}</strong>
                     <span>{product.sku}</span>
                     <span>{formatCurrency(product.price)}</span>
-                    <Badge tone="info">{tr('Tồn', 'Stock')}: {stockByProduct[product.id] ?? 0}</Badge>
+                    <Badge tone="info">{tr('Tồn chi nhánh', 'Branch stock')}: {stockByProduct[product.id] ?? 0}</Badge>
                   </button>
                 ))}
               </div>
