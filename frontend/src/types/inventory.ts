@@ -1,26 +1,15 @@
 import type { PageResponse } from './common'
 
-export interface InventoryAdjustment {
-  id: number
+export interface StockLevel {
   productId: number
   productName: string
-  adjustmentType: string
-  quantity: number
-  reason: string
-  note: string | null
-  createdBy: string
-  createdAt: string
-}
-
-export interface InventoryAdjustmentPage extends PageResponse<InventoryAdjustment> {}
-
-export interface LowStockProduct {
-  productId: number
   sku: string
-  productName: string
+  branchId: number
+  branchName: string
   stock: number
-  threshold: number
 }
+
+export interface StockLevelPage extends PageResponse<StockLevel> {}
 
 export interface StockMovement {
   id: number
