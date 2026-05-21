@@ -61,8 +61,8 @@ export function PosPage() {
     setMessage(null)
     try {
       const [productsData, stockPage] = await Promise.all([
-        getProducts({ page: 0, size: 200 }),
-        getStockLevels({ branchId: currentBranchId, page: 0, size: 500 }),
+        getProducts({ page: 0, size: 100 }),
+        getStockLevels({ branchId: currentBranchId, page: 0, size: 100 }),
       ])
 
       const stockMap: Record<number, number> = {}
