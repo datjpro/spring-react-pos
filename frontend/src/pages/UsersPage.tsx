@@ -3,6 +3,7 @@ import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
+import { PaginationBar } from '../components/PaginationBar'
 import { useI18n } from '../i18n'
 import { getBranches } from '../services/masterData'
 import { createUser, getUsers, updateUserActive } from '../services/users'
@@ -19,11 +20,17 @@ export function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState<string | null>(null)
   const [messageSuccess, setMessageSuccess] = useState(false)
+  const [page, setPage] = useState(0)
+  const pageSize = 10
   const [form, setForm] = useState({ username: '', password: '', role: 'STAFF', branchId: '', active: true })
 
   useEffect(() => {
     void loadUsers()
   }, [])
+
+  useEffect(() => {
+    setPage(0)
+  }, [users.length])
 
   async function loadUsers() {
     setLoading(true)
@@ -39,6 +46,8 @@ export function UsersPage() {
       setLoading(false)
     }
   }
+
+  const pagedUsers = users.slice(page * pageSize, page * pageSize + pageSize)
 
   async function submitCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -113,7 +122,7 @@ export function UsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user) => (
+                    {pagedUsers.map((user) => (
                       <tr key={user.id}>
                         <td>{user.username}</td>
                         <td>{user.role}</td>
@@ -132,6 +141,7 @@ export function UsersPage() {
                 </table>
               </div>
             ) : null}
+            <PaginationBar page={page} totalPages={Math.ceil(users.length / pageSize)} totalElements={users.length} size={pageSize} onPageChange={setPage} />
           </CardContent>
         </Card>
 

@@ -1,7 +1,12 @@
 import axios from 'axios'
 
+function normalizeBaseUrl(rawUrl: string) {
+  const trimmed = rawUrl.trim().replace(/\/+$/, '')
+  return trimmed.endsWith('/api/v1') ? trimmed : `${trimmed}/api/v1`
+}
+
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api/v1',
+  baseURL: normalizeBaseUrl(import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api/v1'),
   headers: {
     'Content-Type': 'application/json',
   },

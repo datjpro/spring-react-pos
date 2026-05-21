@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { CreditCard, FileUp, Minus, Plus, ScanBarcode, Search, ShoppingCart, Trash2 } from 'lucide-react'
+import { CreditCard, FileUp, Minus, Plus, ScanBarcode, ShoppingCart, Trash2 } from 'lucide-react'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { useI18n } from '../i18n'
+import { getStockLevels } from '../services/inventory'
 import { getProducts } from '../services/products'
 import { createSale } from '../services/transactions'
 import type { Product } from '../types/product'
 import { getApiErrorMessage } from '../utils/apiError'
 import { findProductByBarcode, readBarcodeFromFile } from '../utils/barcode'
 
-type CartItem = Product & { quantity: number }
+type CartItem = Product & { quantity: number; branchStock: number }
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('vi-VN', {
@@ -22,8 +23,11 @@ function formatCurrency(value: number) {
 }
 
 export function PosPage() {
-  const { t } = useI18n()
-  const [products, setProducts] = useState<Product[]>([])
+  const { t, language } = useI18n()
+  const tr = (vi: string, en: string) => (language === 'vi' ? vi : en)
+
+  const [allProducts, setAllProducts] = useState<Product[]>([])
+  const [stockByProduct, setStockByProduct] = useState<Record<number, number>>({})
   const [cart, setCart] = useState<CartItem[]>([])
   const [branchId, setBranchId] = useState(1)
   const [search, setSearch] = useState('')
@@ -35,44 +39,74 @@ export function PosPage() {
   const [messageSuccess, setMessageSuccess] = useState(false)
 
   useEffect(() => {
-    getProducts({ page: 0, size: 100 })
-      .then((data) => setProducts(data.content))
-      .catch((error) => {
-        setMessage(getApiErrorMessage(error))
-        setMessageSuccess(false)
-      })
-      .finally(() => setLoading(false))
-  }, [])
+    void loadProductsAndStock(branchId)
+  }, [branchId])
+
+  const saleableProducts = useMemo(
+    () => allProducts.filter((product) => product.active && (stockByProduct[product.id] ?? 0) > 0),
+    [allProducts, stockByProduct],
+  )
 
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase()
-    if (!keyword) return products
-
-    return products.filter((product) => {
-      const fields = [product.name, product.sku, product.barcode ?? '', product.category ?? '']
-      return fields.some((value) => value.toLowerCase().includes(keyword))
-    })
-  }, [products, search])
+    if (!keyword) return saleableProducts
+    return saleableProducts.filter((product) => [product.name, product.sku, product.barcode ?? '', product.category ?? ''].some((value) => value.toLowerCase().includes(keyword)))
+  }, [saleableProducts, search])
 
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
   const subtotal = cart.reduce((sum, item) => sum + item.quantity * item.price, 0)
 
+  async function loadProductsAndStock(currentBranchId: number) {
+    setLoading(true)
+    setMessage(null)
+    try {
+      const [productsData, stockPage] = await Promise.all([
+        getProducts({ page: 0, size: 200 }),
+        getStockLevels({ branchId: currentBranchId, page: 0, size: 500 }),
+      ])
+
+      const stockMap: Record<number, number> = {}
+      for (const item of stockPage.content) stockMap[item.productId] = item.stock
+
+      setAllProducts(productsData.content)
+      setStockByProduct(stockMap)
+      setCart([])
+    } catch (error) {
+      const apiMessage = getApiErrorMessage(error)
+      const notFoundHint = apiMessage.includes('No static resource api/v1/stock-levels')
+        ? tr('Backend chưa bật endpoint stock-levels. Kiểm tra BE đang chạy đúng branch/migration.', 'Backend missing stock-levels endpoint. Check running BE branch/migration.')
+        : apiMessage
+      setMessageSuccess(false)
+      setMessage(notFoundHint)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   function addToCart(product: Product) {
-    if (!product.active) return
+    const maxStock = stockByProduct[product.id] ?? 0
+    if (maxStock <= 0) return
 
     setCart((current) => {
       const index = current.findIndex((item) => item.id === product.id)
-      if (index === -1) return [...current, { ...product, quantity: 1 }]
+      if (index === -1) return [...current, { ...product, quantity: 1, branchStock: maxStock }]
 
       const next = [...current]
       const found = next[index]
+      if (found.quantity >= maxStock) return next
       next[index] = { ...found, quantity: found.quantity + 1 }
       return next
     })
   }
 
   function increaseQuantity(productId: number) {
-    setCart((current) => current.map((item) => (item.id === productId ? { ...item, quantity: item.quantity + 1 } : item)))
+    setCart((current) =>
+      current.map((item) => {
+        if (item.id !== productId) return item
+        if (item.quantity >= item.branchStock) return item
+        return { ...item, quantity: item.quantity + 1 }
+      }),
+    )
   }
 
   function decreaseQuantity(productId: number) {
@@ -93,17 +127,17 @@ export function PosPage() {
     const barcode = rawBarcode.trim()
     if (!barcode) return
 
-    const product = findProductByBarcode(products, barcode)
+    const product = findProductByBarcode(saleableProducts, barcode)
     if (!product) {
       setMessageSuccess(false)
-      setMessage(`Không tìm thấy barcode: ${barcode}`)
+      setMessage(tr(`Không tìm thấy barcode có tồn kho: ${barcode}`, `No saleable barcode found: ${barcode}`))
       return
     }
 
     addToCart(product)
     setScanValue('')
     setMessageSuccess(true)
-    setMessage(`Đã thêm ${product.name} vào giỏ.`)
+    setMessage(tr(`Đã thêm ${product.name} vào giỏ.`, `Added ${product.name} to cart.`))
   }
 
   async function importBarcodeFile(file: File | null) {
@@ -122,7 +156,7 @@ export function PosPage() {
     event.preventDefault()
     if (cart.length === 0) {
       setMessageSuccess(false)
-      setMessage('Giỏ hàng đang trống.')
+      setMessage(tr('Giỏ hàng đang trống.', 'Cart is empty.'))
       return
     }
 
@@ -137,7 +171,8 @@ export function PosPage() {
       setCart([])
       setNote('')
       setMessageSuccess(true)
-      setMessage(`Đã tạo hóa đơn bán ${sale.saleCode}.`)
+      setMessage(tr(`Đã tạo hóa đơn bán ${sale.saleCode}.`, `Created sales invoice ${sale.saleCode}.`))
+      await loadProductsAndStock(branchId)
     } catch (error) {
       setMessageSuccess(false)
       setMessage(getApiErrorMessage(error))
@@ -156,7 +191,7 @@ export function PosPage() {
         </div>
         <div className="pos-hero__metrics">
           <Badge tone="info">
-            <ShoppingCart size={14} /> {itemCount} món
+            <ShoppingCart size={14} /> {itemCount} {tr('món', 'items')}
           </Badge>
           <Badge tone="success">{formatCurrency(subtotal)}</Badge>
         </div>
@@ -168,18 +203,32 @@ export function PosPage() {
         <Card className="pos-products-card">
           <CardHeader>
             <div>
-              <p className="panel__eyebrow">Sản phẩm</p>
-                <h3>{t('pos.addToCart')}</h3>
+              <p className="panel__eyebrow">{tr('Sản phẩm', 'Products')}</p>
+              <h3>{t('pos.addToCart')}</h3>
             </div>
             <Badge tone="neutral">
-              {filteredProducts.length}/{products.length}
+              {filteredProducts.length}/{saleableProducts.length}
             </Badge>
           </CardHeader>
           <CardContent>
-            <label className="pos-search">
-              <Search size={16} />
-              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm tên, SKU, barcode..." />
-            </label>
+            <div className="form-grid form-grid--two">
+              <label className="field">
+                <span>{t('pos.branch')}</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={branchId}
+                  onChange={(event) => {
+                    const value = Number(event.target.value)
+                    setBranchId(value > 0 ? value : 1)
+                  }}
+                />
+              </label>
+              <label className="field">
+                <span>{tr('Tìm kiếm', 'Search')}</span>
+                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={tr('Tìm tên, SKU, barcode...', 'Search name, SKU, barcode...')} />
+              </label>
+            </div>
 
             <div className="barcode-scan-row">
               <label className="field barcode-scan-row__input">
@@ -193,29 +242,29 @@ export function PosPage() {
                       fillByBarcode(scanValue)
                     }
                   }}
-                  placeholder="Quét scanner để thêm nhanh"
+                  placeholder={tr('Quét scanner để thêm nhanh', 'Scan to add quickly')}
                 />
               </label>
               <Button type="button" variant="secondary" onClick={() => fillByBarcode(scanValue)}>
-                <ScanBarcode size={16} />
-                Quét
+                <ScanBarcode size={16} /> {tr('Quét', 'Scan')}
               </Button>
               <label className="ui-button ui-button--ghost ui-button--md ui-input--file-btn">
                 <FileUp size={16} />
-                Import ảnh mã
+                {tr('Import ảnh mã', 'Import barcode image')}
                 <input type="file" accept="image/*" className="ui-input--file-hidden" onChange={(event) => void importBarcodeFile(event.target.files?.[0] ?? null)} />
               </label>
             </div>
 
             {loading ? (
-              <p className="page-state">Đang tải sản phẩm...</p>
+              <p className="page-state">{tr('Đang tải sản phẩm tồn kho...', 'Loading in-stock products...')}</p>
             ) : (
               <div className="product-grid">
                 {filteredProducts.map((product) => (
-                  <button key={product.id} type="button" className="product-card" onClick={() => addToCart(product)} disabled={!product.active}>
+                  <button key={product.id} type="button" className="product-card" onClick={() => addToCart(product)}>
                     <strong>{product.name}</strong>
                     <span>{product.sku}</span>
                     <span>{formatCurrency(product.price)}</span>
+                    <Badge tone="info">{tr('Tồn', 'Stock')}: {stockByProduct[product.id] ?? 0}</Badge>
                   </button>
                 ))}
               </div>
@@ -227,8 +276,8 @@ export function PosPage() {
           <Card>
             <CardHeader>
               <div>
-                <p className="panel__eyebrow">Giỏ hàng</p>
-                <h3>Chi tiết đơn</h3>
+                <p className="panel__eyebrow">{tr('Giỏ hàng', 'Cart')}</p>
+                <h3>{tr('Chi tiết đơn', 'Order details')}</h3>
               </div>
               <ShoppingCart size={20} />
             </CardHeader>
@@ -242,13 +291,14 @@ export function PosPage() {
                       <div>
                         <strong>{item.name}</strong>
                         <p>{formatCurrency(item.price)}</p>
+                        <small>{tr('Tồn chi nhánh', 'Branch stock')}: {item.branchStock}</small>
                       </div>
                       <div className="cart-item__actions">
                         <Button type="button" size="sm" variant="ghost" onClick={() => decreaseQuantity(item.id)}>
                           <Minus size={14} />
                         </Button>
                         <span>{item.quantity}</span>
-                        <Button type="button" size="sm" variant="ghost" onClick={() => increaseQuantity(item.id)}>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => increaseQuantity(item.id)} disabled={item.quantity >= item.branchStock}>
                           <Plus size={14} />
                         </Button>
                         <Button type="button" size="sm" variant="ghost" onClick={() => removeFromCart(item.id)}>
@@ -265,30 +315,26 @@ export function PosPage() {
           <Card>
             <CardHeader>
               <div>
-                <p className="panel__eyebrow">Thanh toán</p>
-                <h3>Tạo phiếu bán</h3>
+                <p className="panel__eyebrow">{tr('Thanh toán', 'Checkout')}</p>
+                <h3>{tr('Tạo phiếu bán', 'Create sale')}</h3>
               </div>
               <CreditCard size={20} />
             </CardHeader>
             <CardContent>
               <form className="form-grid" onSubmit={checkout}>
                 <label className="field">
-                  <span>{t('pos.branch')}</span>
-                  <Input type="number" min={1} value={branchId} onChange={(event) => setBranchId(Number(event.target.value))} />
-                </label>
-                <label className="field">
                   <span>{t('pos.note')}</span>
-                  <Input value={note} onChange={(event) => setNote(event.target.value)} placeholder="VD: Bán tại quầy ca sáng" />
+                  <Input value={note} onChange={(event) => setNote(event.target.value)} placeholder={tr('VD: Bán tại quầy ca sáng', 'Example: Morning counter sale')} />
                 </label>
                 <div className="summary-block summary-block--pos">
                   <div className="summary-block__row">
-                    <span>Tổng cộng</span>
+                    <span>{tr('Tổng cộng', 'Total')}</span>
                     <strong>{formatCurrency(subtotal)}</strong>
                   </div>
                 </div>
                 <Button type="submit" full disabled={submitting || cart.length === 0}>
                   <CreditCard size={16} />
-                  {submitting ? 'Đang tạo...' : t('pos.checkout')}
+                  {submitting ? tr('Đang tạo...', 'Creating...') : t('pos.checkout')}
                 </Button>
               </form>
             </CardContent>

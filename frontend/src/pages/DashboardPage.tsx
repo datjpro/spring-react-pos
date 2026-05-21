@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n'
 import { getProducts } from '../services/products'
 import { getRevenueOverview } from '../services/reports'
+import { useAuth } from '../store/auth'
+import { hasMinimumRole } from '../utils/roles'
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('vi-VN', {
@@ -14,30 +16,42 @@ function formatCurrency(value: number) {
 }
 
 export function DashboardPage() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
+  const { me } = useAuth()
+  const tr = (vi: string, en: string) => (language === 'vi' ? vi : en)
+  const canViewManagement = hasMinimumRole(me?.role, 'MANAGER')
   const [stats, setStats] = useState({ revenue: 0, sales: 0, products: 0 })
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
-    setError(null)
+    setNotice(null)
 
-    Promise.all([getRevenueOverview(), getProducts({ size: 1 })])
-      .then(([revenue, products]) => {
+    if (!canViewManagement) {
+      setStats({ revenue: 0, sales: 0, products: 0 })
+      setLoading(false)
+      return
+    }
+
+    Promise.allSettled([getRevenueOverview(), getProducts({ size: 1 })])
+      .then(([revenueResult, productsResult]) => {
         setStats({
-          revenue: revenue.totalRevenue,
-          sales: revenue.totalOrders,
-          products: products.totalElements,
+          revenue: revenueResult.status === 'fulfilled' ? revenueResult.value.totalRevenue : 0,
+          sales: revenueResult.status === 'fulfilled' ? revenueResult.value.totalOrders : 0,
+          products: productsResult.status === 'fulfilled' ? productsResult.value.totalElements : 0,
         })
+
+        if (revenueResult.status === 'rejected' || productsResult.status === 'rejected') {
+          setNotice(tr('Một số chỉ số bị ẩn do quyền tài khoản hoặc API chưa sẵn sàng.', 'Some metrics are hidden because of account permissions or unavailable APIs.'))
+        }
       })
-      .catch(() => setError('Không tải được dữ liệu dashboard.'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [canViewManagement, language])
 
   const quickLinks = [
-    { to: '/products', title: t('dashboard.products.title'), description: t('dashboard.products.description'), icon: Package },
-    { to: '/sales', title: t('dashboard.sales.title'), description: t('dashboard.sales.description'), icon: ClipboardList },
+    ...(canViewManagement ? [{ to: '/products', title: t('dashboard.products.title'), description: t('dashboard.products.description'), icon: Package }] : []),
+    ...(canViewManagement ? [{ to: '/sales', title: t('dashboard.sales.title'), description: t('dashboard.sales.description'), icon: ClipboardList }] : []),
     { to: '/pos', title: t('dashboard.pos.title'), description: t('dashboard.pos.description'), icon: CreditCard },
     { to: '/inventory', title: t('dashboard.inventory.title'), description: t('dashboard.inventory.description'), icon: Boxes },
   ]
@@ -52,23 +66,27 @@ export function DashboardPage() {
         </div>
       </header>
 
-      {loading ? <p className="page-state">Đang tải dashboard...</p> : null}
-      {error ? <p className="page-state page-state--error">{error}</p> : null}
+      {loading ? <p className="page-state">{tr('Đang tải dashboard...', 'Loading dashboard...')}</p> : null}
+      {notice ? <p className="page-state page-state--error">{notice}</p> : null}
 
-      <div className="stats-grid">
-        <article className="stat-card">
-          <span className="stat-card__label">7-day Revenue</span>
-          <strong className="stat-card__value">{formatCurrency(stats.revenue)}</strong>
-        </article>
-        <article className="stat-card">
-          <span className="stat-card__label">Sales</span>
-          <strong className="stat-card__value">{stats.sales}</strong>
-        </article>
-        <article className="stat-card">
-          <span className="stat-card__label">Products</span>
-          <strong className="stat-card__value">{stats.products}</strong>
-        </article>
-      </div>
+      {canViewManagement ? (
+        <div className="stats-grid">
+          <article className="stat-card">
+            <span className="stat-card__label">7-day Revenue</span>
+            <strong className="stat-card__value">{formatCurrency(stats.revenue)}</strong>
+          </article>
+          <article className="stat-card">
+            <span className="stat-card__label">Sales</span>
+            <strong className="stat-card__value">{stats.sales}</strong>
+          </article>
+          <article className="stat-card">
+            <span className="stat-card__label">Products</span>
+            <strong className="stat-card__value">{stats.products}</strong>
+          </article>
+        </div>
+      ) : (
+        <p className="page-state">{tr('Tài khoản STAFF chỉ dùng POS và tồn kho chi nhánh được phân quyền.', 'STAFF can use POS and permitted branch inventory only.')}</p>
+      )}
 
       <div className="quick-grid">
         {quickLinks.map(({ to, title, description, icon: Icon }) => (
