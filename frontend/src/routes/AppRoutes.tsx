@@ -6,7 +6,6 @@ import { AuthToolsPage } from '../pages/AuthToolsPage'
 import { InventoryPage } from '../pages/InventoryPage'
 import { LoginPage } from '../pages/LoginPage'
 import { MasterDataPage } from '../pages/MasterDataPage'
-import { OrdersPage } from '../pages/OrdersPage'
 import { PosPage } from '../pages/PosPage'
 import { ProductsPage } from '../pages/ProductsPage'
 import { PurchasesPage } from '../pages/PurchasesPage'
@@ -28,7 +27,6 @@ export function AppRoutes() {
           <Route path="/auth-tools" element={<AuthToolsPage />} />
           <Route path="/purchases" element={<PurchasesPage />} />
           <Route path="/sales" element={<SalesPage />} />
-          <Route path="/orders" element={<OrdersPage />} />
           <Route path="/pos" element={<PosPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/reports" element={<ReportsPage />} />
