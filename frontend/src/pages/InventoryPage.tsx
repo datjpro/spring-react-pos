@@ -7,15 +7,21 @@ import { Input } from '../components/ui/Input'
 import { useI18n } from '../i18n'
 import { createStockAdjustment, getStockLevels, getStockMovements } from '../services/inventory'
 import { getProducts } from '../services/products'
+import { useAuth } from '../store/auth'
 import type { StockLevel, StockMovement } from '../types/inventory'
 import type { Product } from '../types/product'
 import { getApiErrorMessage } from '../utils/apiError'
 import { findProductByBarcode, readBarcodeFromFile } from '../utils/barcode'
+import { hasMinimumRole } from '../utils/roles'
 
 type MessageTone = 'success' | 'error'
 
 export function InventoryPage() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
+  const { me } = useAuth()
+  const tr = (vi: string, en: string) => (language === 'vi' ? vi : en)
+  const canChooseBranch = hasMinimumRole(me?.role, 'ADMIN')
+
   const [products, setProducts] = useState<Product[]>([])
   const [stockLevels, setStockLevels] = useState<StockLevel[]>([])
   const [movements, setMovements] = useState<StockMovement[]>([])
@@ -25,7 +31,7 @@ export function InventoryPage() {
   const [messageTone, setMessageTone] = useState<MessageTone>('success')
 
   const [filters, setFilters] = useState({
-    branchId: 1,
+    branchId: me?.branchId ?? 1,
     productId: 0,
     page: 0,
     size: 20,
@@ -33,22 +39,31 @@ export function InventoryPage() {
 
   const [stockForm, setStockForm] = useState({
     productId: 1,
-    branchId: 1,
+    branchId: me?.branchId ?? 1,
     quantityDelta: 1,
     reason: 'Điều chỉnh thủ công',
     note: '',
   })
 
   useEffect(() => {
+    if (me?.branchId != null && !canChooseBranch) {
+      const assignedBranchId = me.branchId
+      setFilters((current) => ({ ...current, branchId: assignedBranchId }))
+      setStockForm((current) => ({ ...current, branchId: assignedBranchId }))
+    }
+  }, [canChooseBranch, me?.branchId])
+
+  useEffect(() => {
     void loadData()
-  }, [])
+  }, [filters.page, filters.branchId])
 
   const stockSummary = useMemo(
     () => ({
       totalRows: stockLevels.length,
       totalStock: stockLevels.reduce((sum, row) => sum + row.stock, 0),
+      branchName: stockLevels[0]?.branchName ?? me?.branchName ?? `#${filters.branchId}`,
     }),
-    [stockLevels],
+    [filters.branchId, me?.branchName, stockLevels],
   )
 
   async function loadData() {
@@ -85,6 +100,7 @@ export function InventoryPage() {
 
   async function submitFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    setFilters((current) => ({ ...current, page: 0 }))
     await loadData()
   }
 
@@ -94,7 +110,7 @@ export function InventoryPage() {
     try {
       await createStockAdjustment(stockForm)
       setMessageTone('success')
-      setMessage('Điều chỉnh kho thành công.')
+      setMessage(tr('Điều chỉnh kho thành công.', 'Stock adjusted successfully.'))
       await loadData()
     } catch (error) {
       setMessageTone('error')
@@ -109,7 +125,7 @@ export function InventoryPage() {
     const product = findProductByBarcode(products, barcode)
     if (!product) {
       setMessageTone('error')
-      setMessage(`Không tìm thấy sản phẩm với barcode: ${barcode}`)
+      setMessage(tr(`Không tìm thấy sản phẩm với barcode: ${barcode}`, `Product not found for barcode: ${barcode}`))
       return
     }
 
@@ -117,7 +133,7 @@ export function InventoryPage() {
     setStockForm((current) => ({ ...current, productId: product.id }))
     setScanValue('')
     setMessageTone('success')
-    setMessage(`Đã chọn sản phẩm: ${product.name}`)
+    setMessage(tr(`Đã chọn sản phẩm: ${product.name}`, `Selected product: ${product.name}`))
   }
 
   async function importBarcodeFile(file: File | null) {
@@ -141,6 +157,9 @@ export function InventoryPage() {
           <p className="page-header__eyebrow">Inventory</p>
           <h2 className="page-header__title">{t('inventory.title')}</h2>
           <p className="page-header__description">{t('inventory.description')}</p>
+          <p className="page-header__description">
+            {tr('Chi nhánh đang xem', 'Current branch')}: <strong>{stockSummary.branchName}</strong>
+          </p>
         </div>
         <Button type="button" variant="secondary" onClick={() => void loadData()} disabled={loading}>
           <RefreshCcw size={16} />
@@ -171,16 +190,16 @@ export function InventoryPage() {
                     fillProductByBarcode(scanValue)
                   }
                 }}
-                placeholder="Quét scanner để tự điền Product ID"
+                placeholder={tr('Quét scanner để tự điền Product ID', 'Scan to autofill product')}
               />
             </label>
             <Button type="button" variant="secondary" onClick={() => fillProductByBarcode(scanValue)}>
               <ScanBarcode size={16} />
-              Quét
+              {tr('Quét', 'Scan')}
             </Button>
             <label className="ui-button ui-button--ghost ui-button--md ui-input--file-btn">
               <FileUp size={16} />
-              Import ảnh mã
+              {tr('Import ảnh mã', 'Import barcode image')}
               <input type="file" accept="image/*" className="ui-input--file-hidden" onChange={(event) => void importBarcodeFile(event.target.files?.[0] ?? null)} />
             </label>
           </div>
@@ -191,7 +210,7 @@ export function InventoryPage() {
         <Card>
           <CardHeader>
             <div>
-              <p className="panel__eyebrow">Bộ lọc</p>
+              <p className="panel__eyebrow">{tr('Bộ lọc', 'Filters')}</p>
               <h3>{t('inventory.stockTitle')}</h3>
             </div>
           </CardHeader>
@@ -199,12 +218,14 @@ export function InventoryPage() {
             <form className="form-grid" onSubmit={submitFilters}>
               <div className="form-grid form-grid--two">
                 <label className="field">
-                  <span>Branch ID</span>
+                  <span>{t('common.branch')}</span>
                   <Input
                     type="number"
                     min={1}
                     value={filters.branchId}
+                    disabled={!canChooseBranch}
                     onChange={(event) => {
+                      if (!canChooseBranch) return
                       const value = Number(event.target.value)
                       setFilters((current) => ({ ...current, branchId: value }))
                       setStockForm((current) => ({ ...current, branchId: value }))
@@ -212,20 +233,11 @@ export function InventoryPage() {
                   />
                 </label>
                 <label className="field">
-                  <span>Product ID (0 = tất cả)</span>
+                  <span>{tr('Product ID (0 = tất cả)', 'Product ID (0 = all)')}</span>
                   <Input type="number" min={0} value={filters.productId} onChange={(event) => setFilters((current) => ({ ...current, productId: Number(event.target.value) }))} />
                 </label>
               </div>
-              <div className="form-grid form-grid--two">
-                <label className="field">
-                  <span>Trang</span>
-                  <Input type="number" min={0} value={filters.page} onChange={(event) => setFilters((current) => ({ ...current, page: Number(event.target.value) }))} />
-                </label>
-                <label className="field">
-                  <span>Kích thước</span>
-                  <Input type="number" min={1} value={filters.size} onChange={(event) => setFilters((current) => ({ ...current, size: Number(event.target.value) }))} />
-                </label>
-              </div>
+              {!canChooseBranch ? <p className="page-state">{tr('Manager/Staff chỉ xem được chi nhánh được gán.', 'Manager/Staff can only view assigned branch.')}</p> : null}
               <Button type="submit" full disabled={loading}>
                 {t('inventory.filter')}
               </Button>
@@ -233,45 +245,47 @@ export function InventoryPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <div>
-              <p className="panel__eyebrow">Điều chỉnh kho</p>
-              <h3>{t('inventory.adjustmentTitle')}</h3>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form className="form-grid" onSubmit={submitStockAdjustment}>
-              <div className="form-grid form-grid--two">
-                <label className="field">
-                  <span>Product ID</span>
-                  <Input type="number" min={1} value={stockForm.productId} onChange={(event) => setStockForm((current) => ({ ...current, productId: Number(event.target.value) }))} />
-                </label>
-                <label className="field">
-                  <span>Branch ID</span>
-                  <Input type="number" min={1} value={stockForm.branchId} onChange={(event) => setStockForm((current) => ({ ...current, branchId: Number(event.target.value) }))} />
-                </label>
+        {hasMinimumRole(me?.role, 'MANAGER') ? (
+          <Card>
+            <CardHeader>
+              <div>
+                <p className="panel__eyebrow">{tr('Điều chỉnh kho', 'Stock adjustment')}</p>
+                <h3>{t('inventory.adjustmentTitle')}</h3>
               </div>
-              <div className="form-grid form-grid--two">
+            </CardHeader>
+            <CardContent>
+              <form className="form-grid" onSubmit={submitStockAdjustment}>
+                <div className="form-grid form-grid--two">
+                  <label className="field">
+                    <span>{t('common.product')}</span>
+                    <Input type="number" min={1} value={stockForm.productId} onChange={(event) => setStockForm((current) => ({ ...current, productId: Number(event.target.value) }))} />
+                  </label>
+                  <label className="field">
+                    <span>{t('common.branch')}</span>
+                    <Input type="number" min={1} value={stockForm.branchId} disabled={!canChooseBranch} onChange={(event) => canChooseBranch && setStockForm((current) => ({ ...current, branchId: Number(event.target.value) }))} />
+                  </label>
+                </div>
+                <div className="form-grid form-grid--two">
+                  <label className="field">
+                    <span>{tr('Quantity Delta', 'Quantity Delta')}</span>
+                    <Input type="number" value={stockForm.quantityDelta} onChange={(event) => setStockForm((current) => ({ ...current, quantityDelta: Number(event.target.value) }))} />
+                  </label>
+                  <label className="field">
+                    <span>{tr('Lý do', 'Reason')}</span>
+                    <Input value={stockForm.reason} onChange={(event) => setStockForm((current) => ({ ...current, reason: event.target.value }))} />
+                  </label>
+                </div>
                 <label className="field">
-                  <span>Quantity Delta</span>
-                  <Input type="number" value={stockForm.quantityDelta} onChange={(event) => setStockForm((current) => ({ ...current, quantityDelta: Number(event.target.value) }))} />
+                  <span>{tr('Ghi chú', 'Note')}</span>
+                  <Input value={stockForm.note} onChange={(event) => setStockForm((current) => ({ ...current, note: event.target.value }))} />
                 </label>
-                <label className="field">
-                  <span>Lý do</span>
-                  <Input value={stockForm.reason} onChange={(event) => setStockForm((current) => ({ ...current, reason: event.target.value }))} />
-                </label>
-              </div>
-              <label className="field">
-                <span>Ghi chú</span>
-                <Input value={stockForm.note} onChange={(event) => setStockForm((current) => ({ ...current, note: event.target.value }))} />
-              </label>
-              <Button type="submit" full disabled={loading}>
-                Tạo điều chỉnh
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                <Button type="submit" full disabled={loading}>
+                  {tr('Tạo điều chỉnh', 'Create adjustment')}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
 
       <div className="catalog-grid">
@@ -285,16 +299,16 @@ export function InventoryPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="page-state">Đang tải tồn kho...</p>
+              <p className="page-state">{tr('Đang tải tồn kho...', 'Loading stock levels...')}</p>
             ) : (
               <div className="table-wrap">
                 <table className="data-table data-table--dense">
                   <thead>
                     <tr>
                       <th>SKU</th>
-                      <th>Sản phẩm</th>
-                      <th>Chi nhánh</th>
-                      <th>Tồn kho</th>
+                      <th>{tr('Sản phẩm', 'Product')}</th>
+                      <th>{tr('Chi nhánh', 'Branch')}</th>
+                      <th>{tr('Tồn kho', 'Stock')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -316,7 +330,7 @@ export function InventoryPage() {
                 </table>
               </div>
             )}
-            <p className="page-state">Tổng tồn trên bảng hiện tại: {stockSummary.totalStock}</p>
+            <p className="page-state">{tr('Tổng tồn trên bảng hiện tại', 'Total stock on current table')}: {stockSummary.totalStock}</p>
           </CardContent>
         </Card>
 
@@ -330,18 +344,18 @@ export function InventoryPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="page-state">Đang tải biến động kho...</p>
+              <p className="page-state">{tr('Đang tải biến động kho...', 'Loading stock movements...')}</p>
             ) : (
               <div className="table-wrap">
                 <table className="data-table data-table--dense">
                   <thead>
                     <tr>
-                      <th>Sản phẩm</th>
-                      <th>Chi nhánh</th>
-                      <th>Loại</th>
-                      <th>Số lượng</th>
-                      <th>Tham chiếu</th>
-                      <th>Thời gian</th>
+                      <th>{tr('Sản phẩm', 'Product')}</th>
+                      <th>{tr('Chi nhánh', 'Branch')}</th>
+                      <th>{tr('Loại', 'Type')}</th>
+                      <th>{tr('Số lượng', 'Quantity')}</th>
+                      <th>{tr('Tham chiếu', 'Reference')}</th>
+                      <th>{tr('Thời gian', 'Time')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -356,9 +370,7 @@ export function InventoryPage() {
                           <td>{item.branchName}</td>
                           <td>{item.movementType}</td>
                           <td>{item.quantity}</td>
-                          <td>
-                            {item.referenceType} #{item.referenceId}
-                          </td>
+                          <td>{item.referenceType} #{item.referenceId}</td>
                           <td>{new Date(item.createdAt).toLocaleString('vi-VN')}</td>
                         </tr>
                       ))
