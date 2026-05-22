@@ -27,7 +27,7 @@ app:
   security:
     jwt:
       secret: 0123456789012345678901234567890101234567890123456789012345678901
-      access-token-expiration-ms: 3600000
+      access-token-expiration-ms: 7200000
       refresh-token-expiration-ms: 604800000
 
   bootstrap:

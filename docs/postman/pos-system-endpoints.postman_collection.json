@@ -1397,11 +1397,26 @@
           "response": [],
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const url = pm.variables.get('baseUrl') || '';",
+                  "pm.test('baseUrl points backend', function () {",
+                  "  pm.expect(url).to.match(/^https?:\\/\\/(localhost|127\\.0\\.0\\.1)(:\\d+)?$/);",
+                  "});"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Lấy tồn kho theo chi nhánh thành công', function () { pm.response.to.have.status(200); });"
+                  "pm.test('L?y t?n kho theo chi nh?nh th?nh c?ng', function () { pm.response.to.have.status(200); });",
+                  "pm.test('kh?ng ph?i l?i static resource', function () {",
+                  "  pm.expect(pm.response.text()).to.not.include('No static resource api/v1/stock-levels.');",
+                  "});"
                 ]
               }
             }
