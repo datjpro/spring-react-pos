@@ -4,10 +4,12 @@ import com.pos.controllers.TestValidationController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,4 +35,20 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.details").isArray())
                 .andExpect(jsonPath("$.path").value("/test/validation"));
     }
+
+    @Test
+    void shouldReturnNotFoundForMissingStaticResource() throws Exception {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        TestValidationController controller = new TestValidationController();
+
+        MockMvc mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(handler)
+                .build();
+
+        mvc.perform(get("/api/v1/stock-levels"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("RESOURCE_NOT_FOUND"))
+                .andExpect(jsonPath("$.path").value("/api/v1/stock-levels"));
+    }
+
 }
