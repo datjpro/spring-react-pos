@@ -28,7 +28,14 @@ Response chính:
   "accessToken": "jwt-token",
   "refreshToken": "refresh-token",
   "tokenType": "Bearer",
-  "expiresIn": 3600
+  "expiresIn": 3600,
+  "user": {
+    "id": 1,
+    "username": "admin",
+    "role": "ADMIN",
+    "branchId": null,
+    "active": true
+  }
 }
 ```
 
@@ -39,6 +46,21 @@ Request body:
 ```json
 {
   "refreshToken": "refresh-token"
+}
+```
+
+Response ch?nh:
+```json
+{
+  "accessToken": "new-jwt-token",
+  "expiresIn": 3600,
+  "user": {
+    "id": 1,
+    "username": "admin",
+    "role": "ADMIN",
+    "branchId": null,
+    "active": true
+  }
 }
 ```
 

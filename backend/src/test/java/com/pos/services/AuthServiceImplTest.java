@@ -86,6 +86,8 @@ class AuthServiceImplTest {
         assertNotNull(loginResponse.accessToken());
         assertNotNull(loginResponse.refreshToken());
         assertEquals("Bearer", loginResponse.tokenType());
+        assertEquals("admin", loginResponse.user().username());
+        assertEquals(Role.ADMIN, loginResponse.user().role());
         verify(refreshTokenRepository).deleteByUser(userEntity);
         verify(refreshTokenRepository).save(any(RefreshTokenEntity.class));
     }
@@ -127,5 +129,7 @@ class AuthServiceImplTest {
         RefreshTokenResponse refreshTokenResponse = authService.refresh(new RefreshTokenRequest(refreshToken));
         assertNotNull(refreshTokenResponse.accessToken());
         assertEquals(3600, refreshTokenResponse.expiresIn());
+        assertEquals("manager", refreshTokenResponse.user().username());
+        assertEquals(Role.MANAGER, refreshTokenResponse.user().role());
     }
 }

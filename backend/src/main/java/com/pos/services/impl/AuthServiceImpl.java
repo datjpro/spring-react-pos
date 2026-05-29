@@ -4,6 +4,7 @@ import com.pos.services.*;
 
 import com.pos.config.JwtConfig;
 import com.pos.dtos.request.LoginRequest;
+import com.pos.dtos.response.AuthUserResponse;
 import com.pos.dtos.response.LoginResponse;
 import com.pos.dtos.request.RefreshTokenRequest;
 import com.pos.dtos.response.RefreshTokenResponse;
@@ -66,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenEntity.setRevoked(false);
         refreshTokenRepository.save(refreshTokenEntity);
 
-        return new LoginResponse(accessToken, refreshToken, "Bearer", jwtConfig.accessTokenExpirationMs() / 1000);
+        return new LoginResponse(accessToken, refreshToken, "Bearer", jwtConfig.accessTokenExpirationMs() / 1000, toAuthUserResponse(userEntity));
     }
 
     @Override
@@ -83,10 +84,21 @@ public class AuthServiceImpl implements AuthService {
             String username = claims.getSubject();
             String accessToken = jwtService.generateAccessToken(username,
                     refreshTokenEntity.getUser().getRole().name());
-            return new RefreshTokenResponse(accessToken, jwtConfig.accessTokenExpirationMs() / 1000);
+            return new RefreshTokenResponse(accessToken, jwtConfig.accessTokenExpirationMs() / 1000, toAuthUserResponse(refreshTokenEntity.getUser()));
         } catch (JwtException jwtException) {
             throw new UnauthorizedException("Refresh token is invalid");
         }
+    }
+
+    private AuthUserResponse toAuthUserResponse(UserEntity userEntity) {
+        Long branchId = userEntity.getBranch() != null ? userEntity.getBranch().getId() : null;
+        return new AuthUserResponse(
+                userEntity.getId(),
+                userEntity.getUsername(),
+                userEntity.getRole(),
+                branchId,
+                userEntity.isActive()
+        );
     }
 
     @Override

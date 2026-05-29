@@ -2,6 +2,8 @@ package com.pos.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.dtos.request.LoginRequest;
+import com.pos.common.enums.Role;
+import com.pos.dtos.response.AuthUserResponse;
 import com.pos.dtos.response.LoginResponse;
 import com.pos.dtos.request.RefreshTokenRequest;
 import com.pos.dtos.response.RefreshTokenResponse;
@@ -50,7 +52,8 @@ class AuthControllerTest {
     @Test
     void shouldLoginSuccessfully() throws Exception {
         LoginRequest loginRequest = new LoginRequest("admin", "123456");
-        LoginResponse loginResponse = new LoginResponse("access-token", "refresh-token", "Bearer", 3600);
+        LoginResponse loginResponse = new LoginResponse("access-token", "refresh-token", "Bearer", 3600,
+                new AuthUserResponse(1L, "admin", Role.ADMIN, null, true));
 
         when(authService.login(any(LoginRequest.class))).thenReturn(loginResponse);
 
@@ -59,13 +62,17 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value("access-token"))
-                .andExpect(jsonPath("$.refreshToken").value("refresh-token"));
+                .andExpect(jsonPath("$.refreshToken").value("refresh-token"))
+                .andExpect(jsonPath("$.user.id").value(1))
+                .andExpect(jsonPath("$.user.username").value("admin"))
+                .andExpect(jsonPath("$.user.role").value("ADMIN"));
     }
 
     @Test
     void shouldRefreshSuccessfully() throws Exception {
         RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest("refresh-token");
-        RefreshTokenResponse refreshTokenResponse = new RefreshTokenResponse("new-access-token", 3600);
+        RefreshTokenResponse refreshTokenResponse = new RefreshTokenResponse("new-access-token", 3600,
+                new AuthUserResponse(2L, "manager", Role.MANAGER, 1L, true));
 
         when(authService.refresh(any(RefreshTokenRequest.class))).thenReturn(refreshTokenResponse);
 
@@ -73,7 +80,9 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(refreshTokenRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("new-access-token"));
+                .andExpect(jsonPath("$.accessToken").value("new-access-token"))
+                .andExpect(jsonPath("$.user.username").value("manager"))
+                .andExpect(jsonPath("$.user.role").value("MANAGER"));
     }
 
     @Test
