@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 import java.util.Optional;
@@ -142,6 +143,6 @@ class BranchProductStockServiceImplTest {
         userBranch.setId(2L);
         user.setBranch(userBranch);
 
-        assertThrows(BadRequestException.class, () -> service.findStockLevels(user, 3L, null, 0, 20));
+        assertThrows(AccessDeniedException.class, () -> service.findStockLevels(user, 3L, null, 0, 20));
     }
 }

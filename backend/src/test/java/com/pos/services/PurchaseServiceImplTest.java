@@ -118,8 +118,6 @@ class PurchaseServiceImplTest {
 
         when(userRepository.findByUsernameAndActiveTrue("admin")).thenReturn(Optional.of(user));
         when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
-        when(branchProductStockService.adjustStock(any(ProductEntity.class), any(BranchEntity.class), anyInt()))
-                .thenThrow(new BadRequestException("Insufficient stock for branch"));
 
         assertThrows(BadRequestException.class,
                 () -> purchaseService.cancel(1L, new CancelPurchaseRequest("H?y l?i"), authentication));
@@ -132,6 +130,8 @@ class PurchaseServiceImplTest {
 
         when(userRepository.findByUsernameAndActiveTrue("admin")).thenReturn(Optional.of(user));
         when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+        when(branchProductStockService.adjustStock(any(ProductEntity.class), any(BranchEntity.class), anyInt()))
+                .thenThrow(new BadRequestException("Insufficient stock for branch"));
 
         assertThrows(BadRequestException.class,
                 () -> purchaseService.cancel(1L, new CancelPurchaseRequest("?m kho"), authentication));

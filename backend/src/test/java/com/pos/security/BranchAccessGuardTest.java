@@ -2,7 +2,7 @@ package com.pos.security;
 
 import com.pos.entities.BranchEntity;
 import com.pos.common.enums.Role;
-import com.pos.common.exception.BadRequestException;
+import org.springframework.security.access.AccessDeniedException;
 import com.pos.entities.UserEntity;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +24,7 @@ class BranchAccessGuardTest {
     void shouldRejectUserWithoutBranchScope() {
         UserEntity user = new UserEntity();
         user.setRole(Role.MANAGER);
-        assertThrows(BadRequestException.class, () -> branchAccessService.requireBranchAccess(user, 1L));
+        assertThrows(AccessDeniedException.class, () -> branchAccessService.requireBranchAccess(user, 1L));
     }
 
     @Test
@@ -34,6 +34,7 @@ class BranchAccessGuardTest {
         UserEntity user = new UserEntity();
         user.setRole(Role.STAFF);
         user.setBranch(branch);
-        assertThrows(BadRequestException.class, () -> branchAccessService.requireBranchAccess(user, 2L));
+        assertThrows(AccessDeniedException.class, () -> branchAccessService.requireBranchAccess(user, 2L));
     }
 }
+
