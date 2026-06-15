@@ -1,0 +1,3 @@
+[agents.subagent]
+description = "General-purpose subagent for delegated tasks."
+model = "Dev-Fullstack"
