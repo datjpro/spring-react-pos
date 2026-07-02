@@ -1,16 +1,23 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { CreditCard, FileUp, Minus, Plus, ScanBarcode, ShoppingCart, Trash2 } from 'lucide-react'
+import { CreditCard, FileUp, Minus, Plus, ScanBarcode, ShoppingCart, Trash2, CheckCircle2, Image as ImageIcon } from 'lucide-react'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
+import { Select } from '../components/ui/Select'
+import { Tabs } from '../components/ui/Tabs'
+import { Modal } from '../components/ui/Modal'
+import { useToast } from '../store/toast'
 import { useI18n } from '../i18n'
 import { getStockLevels } from '../services/inventory'
-import { getProducts } from '../services/products'
+import { getProducts, getProductCategories } from '../services/products'
+import { getBranches } from '../services/masterData'
 import { createSale } from '../services/transactions'
 import { useAuth } from '../store/auth'
 import type { StockLevel } from '../types/inventory'
 import type { Product } from '../types/product'
+import type { Branch } from '../types/masterData'
+import type { Sale } from '../types/transactions'
 import { getApiErrorMessage } from '../utils/apiError'
 import { findProductByBarcode, readBarcodeFromFile } from '../utils/barcode'
 import { hasMinimumRole } from '../utils/roles'
@@ -28,26 +35,39 @@ function formatCurrency(value: number) {
 export function PosPage() {
   const { t, language } = useI18n()
   const { me } = useAuth()
+  const { addToast } = useToast()
   const tr = (vi: string, en: string) => (language === 'vi' ? vi : en)
   const canChooseBranch = hasMinimumRole(me?.role, 'ADMIN')
 
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [stockRows, setStockRows] = useState<StockLevel[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
+  const [branches, setBranches] = useState<Branch[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [branchId, setBranchId] = useState<number>(me?.branchId ?? 1)
+  
   const [search, setSearch] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
   const [scanValue, setScanValue] = useState('')
   const [note, setNote] = useState('')
+  
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
-  const [messageSuccess, setMessageSuccess] = useState(false)
+  
+  const [receiptSale, setReceiptSale] = useState<Sale | null>(null)
 
   useEffect(() => {
     if (me?.branchId && !canChooseBranch) {
       setBranchId(me.branchId)
     }
   }, [canChooseBranch, me?.branchId])
+
+  useEffect(() => {
+    if (canChooseBranch) {
+      getBranches().then(setBranches).catch(() => {})
+    }
+    getProductCategories().then(setCategories).catch(() => {})
+  }, [canChooseBranch])
 
   useEffect(() => {
     if (!branchId) return
@@ -65,14 +85,28 @@ export function PosPage() {
   )
 
   const filteredProducts = useMemo(() => {
+    let result = saleableProducts
+    
+    if (selectedCategory !== 'ALL') {
+      result = result.filter(p => p.category === selectedCategory)
+    }
+    
     const keyword = search.trim().toLowerCase()
-    if (!keyword) return saleableProducts
-    return saleableProducts.filter((product) => [product.name, product.sku, product.barcode ?? '', product.category ?? ''].some((value) => value.toLowerCase().includes(keyword)))
-  }, [saleableProducts, search])
+    if (keyword) {
+      result = result.filter((product) => [product.name, product.sku, product.barcode ?? '', product.category ?? ''].some((value) => value.toLowerCase().includes(keyword)))
+    }
+    
+    return result
+  }, [saleableProducts, search, selectedCategory])
 
-  const branchName = stockRows[0]?.branchName ?? me?.branchName ?? `#${branchId}`
+  const branchName = branches.find(b => b.id === branchId)?.name ?? stockRows[0]?.branchName ?? me?.branchName ?? `#${branchId}`
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
   const subtotal = cart.reduce((sum, item) => sum + item.quantity * item.price, 0)
+
+  const categoryTabs = [
+    { id: 'ALL', label: tr('Tất cả', 'All') },
+    ...categories.map(c => ({ id: c, label: c }))
+  ]
 
   async function loadAllProducts() {
     const collected: Product[] = []
@@ -106,19 +140,18 @@ export function PosPage() {
 
   async function loadProductsAndStock(currentBranchId: number) {
     setLoading(true)
-    setMessage(null)
     try {
       const [productsData, stockData] = await Promise.all([loadAllProducts(), loadAllStockLevels(currentBranchId)])
       setAllProducts(productsData)
       setStockRows(stockData)
-      setCart([])
+      // Only clear cart if changing branch
+      if (currentBranchId !== branchId) setCart([])
     } catch (error) {
       const apiMessage = getApiErrorMessage(error)
       const branchHint = apiMessage.toLowerCase().includes('forbidden')
         ? tr('Tài khoản này chỉ được xem chi nhánh của mình. Hãy dùng đúng branch được gán.', 'This account can only access its own branch. Use assigned branch.')
         : apiMessage
-      setMessageSuccess(false)
-      setMessage(branchHint)
+      addToast(branchHint, 'error')
     } finally {
       setLoading(false)
     }
@@ -134,14 +167,24 @@ export function PosPage() {
 
       const next = [...current]
       const found = next[index]
-      if (found.quantity >= maxStock) return next
+      if (found.quantity >= maxStock) {
+        addToast(tr(`Đã đạt tối đa tồn kho cho ${product.name}`, `Reached maximum stock for ${product.name}`), 'info')
+        return next
+      }
       next[index] = { ...found, quantity: found.quantity + 1 }
       return next
     })
   }
 
   function increaseQuantity(productId: number) {
-    setCart((current) => current.map((item) => (item.id === productId && item.quantity < item.branchStock ? { ...item, quantity: item.quantity + 1 } : item)))
+    setCart((current) => current.map((item) => {
+      if (item.id !== productId) return item
+      if (item.quantity >= item.branchStock) {
+        addToast(tr(`Đã đạt tối đa tồn kho`, `Reached maximum stock`), 'info')
+        return item
+      }
+      return { ...item, quantity: item.quantity + 1 }
+    }))
   }
 
   function decreaseQuantity(productId: number) {
@@ -164,15 +207,13 @@ export function PosPage() {
 
     const product = findProductByBarcode(saleableProducts, barcode)
     if (!product) {
-      setMessageSuccess(false)
-      setMessage(tr(`Không tìm thấy barcode còn hàng: ${barcode}`, `No in-stock barcode found: ${barcode}`))
+      addToast(tr(`Không tìm thấy sản phẩm mã ${barcode}.`, `Product not found for ${barcode}.`), 'error')
       return
     }
 
     addToCart(product)
     setScanValue('')
-    setMessageSuccess(true)
-    setMessage(tr(`Đã thêm ${product.name} vào giỏ.`, `Added ${product.name} to cart.`))
+    addToast(tr(`Đã thêm ${product.name}`, `Added ${product.name}`), 'success')
   }
 
   async function importBarcodeFile(file: File | null) {
@@ -182,21 +223,18 @@ export function PosPage() {
       setScanValue(barcode)
       fillByBarcode(barcode)
     } catch (error) {
-      setMessageSuccess(false)
-      setMessage(getApiErrorMessage(error))
+      addToast(getApiErrorMessage(error), 'error')
     }
   }
 
   async function checkout(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (cart.length === 0) {
-      setMessageSuccess(false)
-      setMessage(tr('Giỏ hàng đang trống.', 'Cart is empty.'))
+      addToast(tr('Giỏ hàng đang trống!', 'Cart is empty!'), 'error')
       return
     }
 
     setSubmitting(true)
-    setMessage(null)
     try {
       const sale = await createSale({
         branchId,
@@ -205,12 +243,11 @@ export function PosPage() {
       })
       setCart([])
       setNote('')
-      setMessageSuccess(true)
-      setMessage(tr(`Đã tạo hóa đơn bán ${sale.saleCode}.`, `Created sales invoice ${sale.saleCode}.`))
+      setReceiptSale(sale)
+      addToast(tr(`Đã tạo hóa đơn ${sale.saleCode}`, `Created invoice ${sale.saleCode}`), 'success')
       await loadProductsAndStock(branchId)
     } catch (error) {
-      setMessageSuccess(false)
-      setMessage(getApiErrorMessage(error))
+      addToast(getApiErrorMessage(error), 'error')
     } finally {
       setSubmitting(false)
     }
@@ -223,9 +260,16 @@ export function PosPage() {
           <p className="page-header__eyebrow">POS</p>
           <h2 className="page-header__title">{t('pos.title')}</h2>
           <p className="page-header__description">{t('pos.description')}</p>
-          <p className="page-header__description">{tr('Chi nhánh đang bán', 'Current branch')}: <strong>{branchName}</strong></p>
         </div>
         <div className="pos-hero__metrics">
+          {canChooseBranch && (
+            <Select 
+              value={branchId}
+              onChange={(e) => setBranchId(Number(e.target.value))}
+              options={branches.map(b => ({ value: b.id, label: b.name }))}
+              style={{ minWidth: 200 }}
+            />
+          )}
           <Badge tone="info">
             <ShoppingCart size={14} /> {itemCount} {tr('món', 'items')}
           </Badge>
@@ -233,46 +277,17 @@ export function PosPage() {
         </div>
       </header>
 
-      {message ? <p className={messageSuccess ? 'page-state page-state--success' : 'page-state page-state--error'}>{message}</p> : null}
-
       <div className="pos-grid pos-grid--checkout">
         <Card className="pos-products-card">
           <CardHeader>
-            <div>
-              <p className="panel__eyebrow">{tr('Sản phẩm', 'Products')}</p>
-              <h3>{t('pos.addToCart')}</h3>
-            </div>
-            <Badge tone="neutral">
-              {filteredProducts.length}/{saleableProducts.length}
-            </Badge>
-          </CardHeader>
-          <CardContent>
-            <div className="form-grid form-grid--two">
-              <label className="field">
-                <span>{t('pos.branch')}</span>
-                <Input
-                  type="number"
-                  min={1}
-                  value={branchId}
-                  disabled={!canChooseBranch}
-                  onChange={(event) => {
-                    if (!canChooseBranch) return
-                    const value = Number(event.target.value)
-                    setBranchId(value > 0 ? value : 1)
-                  }}
-                />
-              </label>
-              <label className="field">
-                <span>{tr('Tìm kiếm', 'Search')}</span>
-                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={tr('Tìm tên, SKU, barcode...', 'Search name, SKU, barcode...')} />
-              </label>
-            </div>
-
-            {!canChooseBranch ? <p className="page-state">{tr('Tài khoản này chỉ thao tác trên chi nhánh được gán.', 'This account only works on its assigned branch.')}</p> : null}
-
-            <div className="barcode-scan-row">
-              <label className="field barcode-scan-row__input">
-                <span>Barcode</span>
+            <div className="pos-search" style={{ flexGrow: 1, marginRight: 16 }}>
+              <Input 
+                value={search} 
+                onChange={(event) => setSearch(event.target.value)} 
+                placeholder={tr('Tìm tên, SKU...', 'Search name, SKU...')} 
+                style={{ minWidth: 250 }}
+              />
+              <div className="barcode-scan-row" style={{ flexGrow: 1 }}>
                 <Input
                   value={scanValue}
                   onChange={(event) => setScanValue(event.target.value)}
@@ -282,31 +297,53 @@ export function PosPage() {
                       fillByBarcode(scanValue)
                     }
                   }}
-                  placeholder={tr('Quét scanner để thêm nhanh', 'Scan to add quickly')}
+                  placeholder={tr('Quét barcode', 'Scan barcode')}
+                  className="barcode-scan-row__input"
                 />
-              </label>
-              <Button type="button" variant="secondary" onClick={() => fillByBarcode(scanValue)}>
-                <ScanBarcode size={16} /> {tr('Quét', 'Scan')}
-              </Button>
-              <label className="ui-button ui-button--ghost ui-button--md ui-input--file-btn">
-                <FileUp size={16} />
-                {tr('Import ảnh mã', 'Import barcode image')}
-                <input type="file" accept="image/*" className="ui-input--file-hidden" onChange={(event) => void importBarcodeFile(event.target.files?.[0] ?? null)} />
-              </label>
+                <Button type="button" variant="secondary" onClick={() => fillByBarcode(scanValue)}>
+                  <ScanBarcode size={16} />
+                </Button>
+                <label className="ui-button ui-button--ghost ui-button--icon ui-input--file-btn">
+                  <FileUp size={16} />
+                  <input type="file" accept="image/*" className="ui-input--file-hidden" onChange={(event) => void importBarcodeFile(event.target.files?.[0] ?? null)} />
+                </label>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs 
+              tabs={categoryTabs} 
+              activeTab={selectedCategory} 
+              onChange={setSelectedCategory} 
+            />
 
             {loading ? (
-              <p className="page-state">{tr('Đang tải sản phẩm còn hàng...', 'Loading in-stock products...')}</p>
+              <p className="page-state">{tr('Đang tải sản phẩm...', 'Loading products...')}</p>
             ) : filteredProducts.length === 0 ? (
-              <p className="page-state">{tr('Chi nhánh này hiện không có sản phẩm còn tồn để bán.', 'This branch currently has no saleable stock.')}</p>
+              <div className="empty-state">
+                <ShoppingCart size={48} className="empty-state__icon" />
+                <h3 className="empty-state__title">{tr('Không tìm thấy sản phẩm', 'No products found')}</h3>
+                <p className="empty-state__description">{tr('Chi nhánh này không có sản phẩm phù hợp.', 'This branch has no matching products.')}</p>
+              </div>
             ) : (
-              <div className="product-grid">
+              <div className="product-grid product-grid--pos">
                 {filteredProducts.map((product) => (
-                  <button key={product.id} type="button" className="product-card" onClick={() => addToCart(product)}>
-                    <strong>{product.name}</strong>
-                    <span>{product.sku}</span>
-                    <span>{formatCurrency(product.price)}</span>
-                    <Badge tone="info">{tr('Tồn chi nhánh', 'Branch stock')}: {stockByProduct[product.id] ?? 0}</Badge>
+                  <button key={product.id} type="button" className="product-tile product-tile--pos" onClick={() => addToCart(product)}>
+                    {product.imageUrl ? (
+                      <div style={{ height: 100, borderRadius: 8, overflow: 'hidden', marginBottom: 8, background: 'var(--surface-strong)' }}>
+                        <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    ) : (
+                      <div style={{ height: 100, borderRadius: 8, marginBottom: 8, background: 'var(--surface-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                        <ImageIcon size={32} />
+                      </div>
+                    )}
+                    <div className="product-tile__topline">
+                      <span>{product.sku}</span>
+                      <Badge tone="info">{stockByProduct[product.id] ?? 0}</Badge>
+                    </div>
+                    <h3>{product.name}</h3>
+                    <strong style={{ color: 'var(--primary)' }}>{formatCurrency(product.price)}</strong>
                   </button>
                 ))}
               </div>
@@ -315,74 +352,105 @@ export function PosPage() {
         </Card>
 
         <aside className="pos-sidebar">
-          <Card>
-            <CardHeader>
-              <div>
-                <p className="panel__eyebrow">{tr('Giỏ hàng', 'Cart')}</p>
-                <h3>{tr('Chi tiết đơn', 'Order details')}</h3>
-              </div>
-              <ShoppingCart size={20} />
-            </CardHeader>
-            <CardContent>
-              {cart.length === 0 ? (
-                <p className="page-state">{t('pos.emptyCart')}</p>
-              ) : (
-                <div className="list-stack">
-                  {cart.map((item) => (
-                    <article key={item.id} className="cart-item">
-                      <div>
-                        <strong>{item.name}</strong>
-                        <p>{formatCurrency(item.price)}</p>
-                        <small>{tr('Tồn chi nhánh', 'Branch stock')}: {item.branchStock}</small>
-                      </div>
-                      <div className="cart-item__actions">
-                        <Button type="button" size="sm" variant="ghost" onClick={() => decreaseQuantity(item.id)}>
-                          <Minus size={14} />
-                        </Button>
-                        <span>{item.quantity}</span>
-                        <Button type="button" size="sm" variant="ghost" onClick={() => increaseQuantity(item.id)} disabled={item.quantity >= item.branchStock}>
-                          <Plus size={14} />
-                        </Button>
-                        <Button type="button" size="sm" variant="ghost" onClick={() => removeFromCart(item.id)}>
-                          <Trash2 size={14} />
-                        </Button>
-                      </div>
-                    </article>
-                  ))}
+          <div className="pos-checkout-stack">
+            <Card>
+              <CardHeader>
+                <div>
+                  <p className="panel__eyebrow">{tr('Giỏ hàng', 'Cart')}</p>
+                  <h3>{branchName}</h3>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div>
-                <p className="panel__eyebrow">{tr('Thanh toán', 'Checkout')}</p>
-                <h3>{tr('Tạo phiếu bán', 'Create sale')}</h3>
-              </div>
-              <CreditCard size={20} />
-            </CardHeader>
-            <CardContent>
-              <form className="form-grid" onSubmit={checkout}>
-                <label className="field">
-                  <span>{t('pos.note')}</span>
-                  <Input value={note} onChange={(event) => setNote(event.target.value)} placeholder={tr('VD: Bán tại quầy ca sáng', 'Example: Morning counter sale')} />
-                </label>
-                <div className="summary-block summary-block--pos">
-                  <div className="summary-block__row">
-                    <span>{tr('Tổng cộng', 'Total')}</span>
-                    <strong>{formatCurrency(subtotal)}</strong>
+                <ShoppingCart size={20} />
+              </CardHeader>
+              <CardContent>
+                {cart.length === 0 ? (
+                  <p className="page-state" style={{ margin: '32px 0' }}>{t('pos.emptyCart')}</p>
+                ) : (
+                  <div className="cart-list cart-list--pos">
+                    {cart.map((item) => (
+                      <article key={item.id} className="cart-row cart-row--pos">
+                        <div style={{ flexGrow: 1, minWidth: 0, paddingRight: 12 }}>
+                          <strong style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</strong>
+                          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>{formatCurrency(item.price)}</p>
+                        </div>
+                        <div className="quantity-stepper">
+                          <Button type="button" size="sm" variant="ghost" className="ui-button--icon" onClick={() => decreaseQuantity(item.id)}>
+                            <Minus size={14} />
+                          </Button>
+                          <span>{item.quantity}</span>
+                          <Button type="button" size="sm" variant="ghost" className="ui-button--icon" onClick={() => increaseQuantity(item.id)} disabled={item.quantity >= item.branchStock}>
+                            <Plus size={14} />
+                          </Button>
+                          <Button type="button" size="sm" variant="ghost" className="ui-button--icon" onClick={() => removeFromCart(item.id)} style={{ color: 'var(--danger)', marginLeft: 8 }}>
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </article>
+                    ))}
                   </div>
-                </div>
-                <Button type="submit" full disabled={submitting || cart.length === 0}>
-                  <CreditCard size={16} />
-                  {submitting ? tr('Đang tạo...', 'Creating...') : t('pos.checkout')}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent style={{ paddingTop: 24 }}>
+                <form className="form-grid" onSubmit={checkout}>
+                  <label className="field">
+                    <span>{t('pos.note')}</span>
+                    <Input value={note} onChange={(event) => setNote(event.target.value)} placeholder={tr('VD: Bán tại quầy ca sáng', 'Example: Morning counter sale')} />
+                  </label>
+                  <div className="summary-block summary-block--pos">
+                    <div className="summary-block__row summary-block__row--total">
+                      <span style={{ fontSize: '1.2rem' }}>{tr('Tổng cộng', 'Total')}</span>
+                      <strong style={{ fontSize: '1.5rem', color: 'var(--success)' }}>{formatCurrency(subtotal)}</strong>
+                    </div>
+                  </div>
+                  <Button type="submit" size="lg" full disabled={submitting || cart.length === 0}>
+                    <CreditCard size={18} />
+                    {submitting ? tr('Đang xử lý...', 'Processing...') : t('pos.checkout')}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         </aside>
       </div>
+
+      <Modal 
+        isOpen={!!receiptSale} 
+        onClose={() => setReceiptSale(null)} 
+        title={tr('Thanh toán thành công', 'Checkout successful')}
+        maxWidth="450px"
+        footer={
+          <Button onClick={() => setReceiptSale(null)}>
+            {tr('Đóng', 'Close')}
+          </Button>
+        }
+      >
+        {receiptSale && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+            <CheckCircle2 size={64} color="var(--success)" style={{ margin: '16px 0' }} />
+            <h3 style={{ margin: 0, fontSize: '1.5rem' }}>{formatCurrency(receiptSale.totalAmount)}</h3>
+            <p style={{ margin: 0, color: 'var(--text-muted)' }}>{tr('Mã hóa đơn', 'Receipt ID')}: <strong>{receiptSale.saleCode}</strong></p>
+            
+            <div style={{ width: '100%', borderTop: '1px dashed var(--border-strong)', paddingTop: '16px', marginTop: '8px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                <tbody>
+                  {receiptSale.items.map((item, idx) => (
+                    <tr key={idx}>
+                      <td style={{ padding: '4px 0' }}>{item.quantity}x {item.productName}</td>
+                      <td style={{ padding: '4px 0', textAlign: 'right' }}>{formatCurrency(item.lineTotal)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <p style={{ width: '100%', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '16px' }}>
+              {new Date(receiptSale.createdAt).toLocaleString('vi-VN')} - {receiptSale.branchName}
+            </p>
+          </div>
+        )}
+      </Modal>
     </section>
   )
 }
